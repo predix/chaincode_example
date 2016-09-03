@@ -4,7 +4,7 @@
   "params": {
     "type": 1,
     "chaincodeID": {
-      "name": "11d4c15047cdc0908323a9b3703a2116ee4a6afb394119364e417aeac756262d9ef78bfc0552bbae75a93cdaba8c32772e9e5ea36d18a8df6e71d9a0af034312"
+      "name": "7f390a592e4eded63c104fbd5e68c237f7c8c7a57213433fb07defb4b4f51480974259bb328a2ce1cce9ce352f9701be397ee75077791affa7e89ce36b6c0d23"
     },
     "ctorMsg": {
       "function": "exchangeRate",
