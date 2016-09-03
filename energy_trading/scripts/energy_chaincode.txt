@@ -1,0 +1,17 @@
+{
+    "jsonrpc": "2.0",
+    "method": "deploy",
+    "params": {
+        "type": 1,
+        "chaincodeID": {
+            "path": "https://github.com/atulkc/chaincode_example/energy_trading"
+        },
+        "ctorMsg": {
+            "function": "init",
+            "args": [
+                "0.01"
+            ]
+        }
+    },
+    "id": 1
+}

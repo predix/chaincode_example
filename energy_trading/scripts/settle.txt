@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "method": "invoke",
+  "params": {
+    "type": 1,
+    "chaincodeID": {
+      "name": "11d4c15047cdc0908323a9b3703a2116ee4a6afb394119364e417aeac756262d9ef78bfc0552bbae75a93cdaba8c32772e9e5ea36d18a8df6e71d9a0af034312"
+    },
+    "ctorMsg": {
+      "function": "settle",
+      "args": [
+      ]
+    }
+  },
+  "id": 0
+}
