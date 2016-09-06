@@ -354,6 +354,10 @@ func (t *EnergyTradingChainCode) Query(stub *shim.ChaincodeStub, function string
 		return t.meterInfo(stub, args)
 	}
 
+	if function == "meters" {
+		return t.meters(stub, args)
+	}
+
 	return nil, errors.New("Invalid query function name")
 }
 
@@ -432,6 +436,41 @@ func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []stri
 	if err != nil {
 		// logger.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
 		return nil, fmt.Errorf("Failed marshalling payload [%s]: [%s]", accountId, err)
+	}
+
+	return payload, nil
+}
+
+// Return all meters
+func (t *EnergyTradingChainCode) meters(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	// logger.Info("In reportedKwh function")
+	if len(args) > 0 {
+		// logger.Error("Incorrect number of arguments")
+		return nil, errors.New("Incorrect number of arguments. No arguments required")
+	}
+
+	var columns []shim.Column
+
+	rowChannel, err := stub.GetRows(tableName, columns)
+	if err != nil {
+		// logger.Errorf("Error in getting rows:%s", err.Error())
+		return nil, errors.New("Error in fetching rows")
+	}
+	meters := make([]MeterInfo, 0)
+	for row := range rowChannel {
+		meter := MeterInfo{
+			Id:             row.Columns[0].GetString_(),
+			Name:           row.Columns[1].GetString_(),
+			Kwh:            row.Columns[2].GetInt64(),
+			AccountBalance: row.Columns[3].GetInt64(),
+		}
+		meters = append(meters, meter)
+	}
+
+	payload, err := json.Marshal(meters)
+	if err != nil {
+		// logger.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
+		return nil, fmt.Errorf("Failed marshalling payload [%s]", err)
 	}
 
 	return payload, nil

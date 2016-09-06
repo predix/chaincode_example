@@ -7,9 +7,8 @@
       "name": "b5a8ef99112a72b878050ed327e7ce80f6d98e0aaead3eec6d409a3094b83bc521ad21f5f648a4f036f8231bed2c1fde4d4dbec7055d34cd5d2bffea7e16ff1d"
     },
     "ctorMsg": {
-      "function": "meterInfo",
+      "function": "meters",
       "args": [
-        "6"
       ]
     }
   },

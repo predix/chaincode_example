@@ -59,3 +59,8 @@ Smart contract to demonstrate peer to peer energy trading. We are using [this](h
     ```
     curl -k -XPOST -d @scripts/meter_query.txt https://<blockchain ip>/chaincode
     ```
+1. Query all meters
+
+    ```
+    curl -k -XPOST -d @scripts/meters.txt https://<blockchain ip>/chaincode
+    ```
