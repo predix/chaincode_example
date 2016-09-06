@@ -1,0 +1,17 @@
+{
+  "jsonrpc": "2.0",
+  "method": "query",
+  "params": {
+    "type": 1,
+    "chaincodeID": {
+      "name": "7f390a592e4eded63c104fbd5e68c237f7c8c7a57213433fb07defb4b4f51480974259bb328a2ce1cce9ce352f9701be397ee75077791affa7e89ce36b6c0d23"
+    },
+    "ctorMsg": {
+      "function": "meterInfo",
+      "args": [
+        "2"
+      ]
+    }
+  },
+  "id": 0
+}

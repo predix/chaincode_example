@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,6 +15,13 @@ const (
 	costPerKwh = 2.0 //cost for consumer for consuming one kwh energy
 	tableName  = "Meters"
 )
+
+type MeterInfo struct {
+	Id             string `json:"id"`
+	Name           string `json:"name"`
+	Kwh            int64  `json:"kwh"`
+	AccountBalance int64  `json:"account_balance"`
+}
 
 // EnergyTradingChainCode implementation. This smart contract enables multiple smart meters
 // to enroll and report their production/consumption of energy. It then lets user settle
@@ -222,13 +230,6 @@ func (t *EnergyTradingChainCode) reportDelta(stub *shim.ChaincodeStub, args []st
 	return nil, nil
 }
 
-type MeterInfo struct {
-	id             string
-	name           string
-	kwh            int64
-	accountBalance int64
-}
-
 // Settles the accounts and resets the reported kwh back to 0 for all meters
 func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	// logger.Info("In settle function")
@@ -242,10 +243,10 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 	meters := make([]MeterInfo, 0)
 	for row := range rowChannel {
 		meter := MeterInfo{
-			id:             row.Columns[0].GetString_(),
-			name:           row.Columns[1].GetString_(),
-			kwh:            row.Columns[2].GetInt64(),
-			accountBalance: row.Columns[3].GetInt64(),
+			Id:             row.Columns[0].GetString_(),
+			Name:           row.Columns[1].GetString_(),
+			Kwh:            row.Columns[2].GetInt64(),
+			AccountBalance: row.Columns[3].GetInt64(),
 		}
 		meters = append(meters, meter)
 	}
@@ -281,7 +282,7 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 		// logger.Debugf("Settling account for meter:%s", meter.id)
 		// logger.Debugf("Meter %s, energy consumption: %d and account balance:%d", meter.id, meter.kwh, meter.accountBalance)
 
-		amount = float64(meter.kwh) * costPerKwh
+		amount = float64(meter.Kwh) * costPerKwh
 		if amount < 0 {
 			// logger.Debugf("This meter %s is a consumer, no cut from this guy", meter.id)
 			// logger.Debugf("Total amount debited from %s is %f", meter.id, amount)
@@ -293,10 +294,10 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 			// logger.Debugf("Fee charged to %s is %f", meter.id, fee)
 			// logger.Debugf("Total amount credited to %s is %f", meter.id, amount)
 		}
-		row, err := t.getRow(stub, meter.id)
+		row, err := t.getRow(stub, meter.Id)
 		if err != nil {
 			// logger.Errorf("Failed retrieving account [%s]: [%s]", meter.id, err)
-			return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", meter.id, err)
+			return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", meter.Id, err)
 		}
 
 		prevBalanceStr := row.Columns[3].GetString_()
@@ -349,6 +350,10 @@ func (t *EnergyTradingChainCode) Query(stub *shim.ChaincodeStub, function string
 		return t.exchangeAccountBalance(stub, args)
 	}
 
+	if function == "meterInfo" {
+		return t.meterInfo(stub, args)
+	}
+
 	return nil, errors.New("Invalid query function name")
 }
 
@@ -396,6 +401,40 @@ func (t *EnergyTradingChainCode) balance(stub *shim.ChaincodeStub, args []string
 	// logger.Debugf("Account balance for account:%s is %s", accountId, balance)
 
 	return []byte(balance), nil
+}
+
+// Return meter information
+func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	// logger.Info("In reportedKwh function")
+	if len(args) == 0 {
+		// logger.Error("Incorrect number of arguments")
+		return nil, errors.New("Incorrect number of arguments. Specify account number")
+	}
+
+	accountId := args[0]
+
+	// logger.Debugf("Getting reported kwh for meter with id:%s", accountId)
+
+	row, err := t.getRow(stub, accountId)
+	if err != nil {
+		// logger.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
+		return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
+	}
+
+	meter := MeterInfo{
+		Id:             row.Columns[0].GetString_(),
+		Name:           row.Columns[1].GetString_(),
+		Kwh:            row.Columns[2].GetInt64(),
+		AccountBalance: row.Columns[3].GetInt64(),
+	}
+
+	payload, err := json.Marshal(meter)
+	if err != nil {
+		// logger.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
+		return nil, fmt.Errorf("Failed marshalling payload [%s]: [%s]", accountId, err)
+	}
+
+	return payload, nil
 }
 
 func (t *EnergyTradingChainCode) exchangeRate(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
