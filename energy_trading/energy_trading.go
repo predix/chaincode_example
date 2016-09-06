@@ -17,10 +17,10 @@ const (
 )
 
 type MeterInfo struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	Kwh            int64  `json:"kwh"`
-	AccountBalance int64  `json:"account_balance"`
+	Id             string  `json:"id"`
+	Name           string  `json:"name"`
+	Kwh            int64   `json:"kwh"`
+	AccountBalance float64 `json:"account_balance"`
 }
 
 // EnergyTradingChainCode implementation. This smart contract enables multiple smart meters
@@ -242,11 +242,16 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 	}
 	meters := make([]MeterInfo, 0)
 	for row := range rowChannel {
+		balance, err := strconv.ParseFloat(row.Columns[3].GetString_(), 64)
+		if err != nil {
+			// logger.Errorf("Error in converting to float:%s", err.Error())
+			return nil, fmt.Errorf("Invalid value of accountBalance:%s", row.Columns[3].GetString_())
+		}
 		meter := MeterInfo{
 			Id:             row.Columns[0].GetString_(),
 			Name:           row.Columns[1].GetString_(),
 			Kwh:            row.Columns[2].GetInt64(),
-			AccountBalance: row.Columns[3].GetInt64(),
+			AccountBalance: balance,
 		}
 		meters = append(meters, meter)
 	}
@@ -300,14 +305,7 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 			return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", meter.Id, err)
 		}
 
-		prevBalanceStr := row.Columns[3].GetString_()
-		// logger.Debugf("Previous balance for account:%s is %s", meter.id, prevBalanceStr)
-		prevBalance, err := strconv.ParseFloat(string(prevBalanceStr), 64)
-		if err != nil {
-			// logger.Errorf("Error in converting to float:%s", err.Error())
-			return nil, fmt.Errorf("Invalid value of accountBalance:%s", prevBalanceStr)
-		}
-		newBalance := prevBalance + amount
+		newBalance := meter.AccountBalance + amount
 		// logger.Debugf("New balance for account:%s is %f", meter.id, newBalance)
 		newBalanceStr := strconv.FormatFloat(newBalance, 'f', 6, 64)
 		row.Columns[3] = &shim.Column{Value: &shim.Column_String_{String_: newBalanceStr}}
@@ -425,11 +423,17 @@ func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []stri
 		return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
 	}
 
+	balance, err := strconv.ParseFloat(row.Columns[3].GetString_(), 64)
+	if err != nil {
+		// logger.Errorf("Error in converting to float:%s", err.Error())
+		return nil, fmt.Errorf("Invalid value of accountBalance:%s", row.Columns[3].GetString_())
+	}
+
 	meter := MeterInfo{
 		Id:             row.Columns[0].GetString_(),
 		Name:           row.Columns[1].GetString_(),
 		Kwh:            row.Columns[2].GetInt64(),
-		AccountBalance: row.Columns[3].GetInt64(),
+		AccountBalance: balance,
 	}
 
 	payload, err := json.Marshal(meter)
@@ -458,11 +462,16 @@ func (t *EnergyTradingChainCode) meters(stub *shim.ChaincodeStub, args []string)
 	}
 	meters := make([]MeterInfo, 0)
 	for row := range rowChannel {
+		balance, err := strconv.ParseFloat(row.Columns[3].GetString_(), 64)
+		if err != nil {
+			// logger.Errorf("Error in converting to float:%s", err.Error())
+			return nil, fmt.Errorf("Invalid value of accountBalance:%s", row.Columns[3].GetString_())
+		}
 		meter := MeterInfo{
 			Id:             row.Columns[0].GetString_(),
 			Name:           row.Columns[1].GetString_(),
 			Kwh:            row.Columns[2].GetInt64(),
-			AccountBalance: row.Columns[3].GetInt64(),
+			AccountBalance: balance,
 		}
 		meters = append(meters, meter)
 	}
