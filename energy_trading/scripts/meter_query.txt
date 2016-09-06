@@ -4,7 +4,7 @@
   "params": {
     "type": 1,
     "chaincodeID": {
-      "name": "a082656618e2f6bebbb30e54e699e88450a5cbc6a82334735f9b530ff3820c3740327ba9992577962821ee2174bbf2657fff9bae99836ae987371bae2b4315ae"
+      "name": "e67dc90bb4c014d47632ea5a2af6da057029672bc66fc281d20ecf52566a204f8b69a7e19696acc80bfffae4c007e970532c2ac21de8c3fe577d2e2b57443f66"
     },
     "ctorMsg": {
       "function": "meterInfo",
