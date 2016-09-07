@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-// var // logger = logging.MustGetLogger("energy_trading")
+// var logger = logging.MustGetLogger("energy_trading")
 
 const (
-	costPerKwh = 2.0 //cost for consumer for consuming one kwh energy
-	tableName  = "Meters"
+	tableName = "Meters"
 )
 
 type MeterInfo struct {
@@ -21,6 +21,21 @@ type MeterInfo struct {
 	Name           string  `json:"name"`
 	Kwh            int64   `json:"kwh"`
 	AccountBalance float64 `json:"account_balance"`
+	RatePerKwh     int64   `json:"rate_per_kwh"`
+}
+
+type ByRate []*MeterInfo
+
+func (a ByRate) Len() int {
+	return len(a)
+}
+
+func (a ByRate) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a ByRate) Less(i, j int) bool {
+	return a[i].RatePerKwh < a[j].RatePerKwh
 }
 
 // EnergyTradingChainCode implementation. This smart contract enables multiple smart meters
@@ -34,13 +49,13 @@ func (t *EnergyTradingChainCode) Init(stub *shim.ChaincodeStub, function string,
 	var val float64
 
 	if len(args) == 0 {
-		// // logger.Error("Incorrect number of arguments")
+		// logger.Error("Incorrect number of arguments")
 		return nil, errors.New("Incorrect number of arguments. Specify the exchange rate for this smart contract.")
 	}
 
 	val, err = strconv.ParseFloat(string(args[0]), 64)
 	if err != nil {
-		// // logger.Errorf("Invalid value %s for exchange rate", args[0])
+		// logger.Errorf("Invalid value %s for exchange rate", args[0])
 		return nil, errors.New("Invalid value for exchange rate")
 	}
 
@@ -106,15 +121,21 @@ func (t *EnergyTradingChainCode) Invoke(stub *shim.ChaincodeStub, function strin
 // Enrolls a new meter
 func (t *EnergyTradingChainCode) enroll(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	// logger.Info("In enroll function")
-	if len(args) < 2 {
+	if len(args) < 3 {
 		// logger.Error("Incorrect number of arguments")
-		return nil, errors.New("Incorrect number of arguments. Specify account number and name")
+		return nil, errors.New("Incorrect number of arguments. Specify account number, name and rate per kwh")
 	}
 
 	accountId := args[0]
 	accountName := args[1]
+	rateKwhStr := args[2]
+	rateKwh, err := strconv.ParseInt(string(rateKwhStr), 10, 64)
+	if err != nil {
+		// logger.Errorf("Error in converting to int:%s", err.Error())
+		return nil, fmt.Errorf("Invalid value of rate per kwh:%s", rateKwhStr)
+	}
 
-	// logger.Infof("Enrolling meter with id:%s and name:%s", accountId, accountName)
+	// logger.Infof("Enrolling meter with id:%s, name:%s and target rate:%d", accountId, accountName, rateKwh)
 
 	ok, err := stub.InsertRow(tableName, shim.Row{
 		Columns: []*shim.Column{
@@ -122,6 +143,7 @@ func (t *EnergyTradingChainCode) enroll(stub *shim.ChaincodeStub, args []string)
 			&shim.Column{Value: &shim.Column_String_{String_: accountName}},
 			&shim.Column{Value: &shim.Column_Int64{Int64: 0}},
 			&shim.Column{Value: &shim.Column_String_{String_: "0.0"}},
+			&shim.Column{Value: &shim.Column_Int64{Int64: rateKwh}},
 		},
 	})
 
@@ -240,7 +262,7 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 		// logger.Errorf("Error in getting rows:%s", err.Error())
 		return nil, errors.New("Error in fetching rows")
 	}
-	meters := make([]MeterInfo, 0)
+	meters := make([]*MeterInfo, 0)
 	for row := range rowChannel {
 		balance, err := strconv.ParseFloat(row.Columns[3].GetString_(), 64)
 		if err != nil {
@@ -252,8 +274,9 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 			Name:           row.Columns[1].GetString_(),
 			Kwh:            row.Columns[2].GetInt64(),
 			AccountBalance: balance,
+			RatePerKwh:     row.Columns[4].GetInt64(),
 		}
-		meters = append(meters, meter)
+		meters = append(meters, &meter)
 	}
 	// logger.Infof("Number of rows in table:%d", len(meters))
 
@@ -282,34 +305,77 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 		return nil, errors.New("Invalid value for exchange account balance")
 	}
 
-	var amount float64
+	// logger.Debug("Seggregating buyers and sellers")
+	buyers := make([]*MeterInfo, 0)
+	sellers := make([]*MeterInfo, 0)
 	for _, meter := range meters {
-		// logger.Debugf("Settling account for meter:%s", meter.id)
-		// logger.Debugf("Meter %s, energy consumption: %d and account balance:%d", meter.id, meter.kwh, meter.accountBalance)
-
-		amount = float64(meter.Kwh) * costPerKwh
-		if amount < 0 {
-			// logger.Debugf("This meter %s is a consumer, no cut from this guy", meter.id)
-			// logger.Debugf("Total amount debited from %s is %f", meter.id, amount)
+		if meter.Kwh < 0 {
+			// logger.Debugf("Meter %s is a buyer", meter.Id)
+			buyers = append(buyers, meter)
 		} else {
-			// logger.Debugf("This meter %s is a producer, charge him with small fee", meter.id)
-			fee := amount * xchngRate
-			amount = amount - fee
-			xchngBalance = xchngBalance + fee
-			// logger.Debugf("Fee charged to %s is %f", meter.id, fee)
-			// logger.Debugf("Total amount credited to %s is %f", meter.id, amount)
+			// logger.Debugf("Meter %s is a seller", meter.Id)
+			sellers = append(sellers, meter)
 		}
+	}
+	// Sort the sellers so buyers can purchase from sellers offering lower rates first
+	sort.Sort(ByRate(sellers))
+
+	// logger.Infof("Number of buyers: %d, number of sellers: %d", len(buyers), len(sellers))
+	for _, buyer := range buyers {
+		// logger.Debugf("Finding sellers for buyer:%s with rate less than %d for %d KWH", buyer.Id, buyer.RatePerKwh, buyer.Kwh)
+		// Very crude way of setteling...O(n^2) complexity...need to improve
+		for _, seller := range sellers {
+			if buyer.Kwh == 0 {
+				// logger.Debugf("Buyer %s has all its energy need satisfied", buyer.Id)
+				break
+			}
+			if seller.RatePerKwh <= buyer.RatePerKwh && seller.Kwh > 0 {
+				// logger.Debugf("Seller %s has produced %d at rate less or equal to buyer's requirement", seller.Id, seller.Kwh)
+				energyConsumed := buyer.Kwh * -1
+				if energyConsumed <= seller.Kwh {
+					seller.Kwh = seller.Kwh - energyConsumed
+					// Set the energy consumed by buyer to 0
+					buyer.Kwh = 0
+					amountDebited := float64(energyConsumed * seller.RatePerKwh)
+					buyer.AccountBalance = buyer.AccountBalance - amountDebited
+					feeAssessed := amountDebited * xchngRate
+					xchngBalance = xchngBalance + feeAssessed
+					amountCredited := amountDebited - feeAssessed
+					// logger.Debugf("Amount debited from buyer %s is %f and amount credited to seller %s is %f", buyer.Id, amountDebited, seller.Id, amountCredited)
+					// logger.Debugf("Fee charged for this transaction: %f", feeAssessed)
+					seller.AccountBalance = seller.AccountBalance + amountCredited
+				} else {
+					// logger.Debugf("Only partial need of buyer %s is satisfied by seller %s", buyer.Id, seller.Id)
+					// Add seller Kwh to buyer, which will essentially reduce buyer Kwh consumption
+					// as buyer Kwh is -ve
+					buyer.Kwh = buyer.Kwh + seller.Kwh
+					partialEnergyConsumed := seller.Kwh
+					// logger.Debugf("Total unsatisfied energy need for buyer:%s is %d", buyer.Id, buyer.Kwh)
+					// Set the energy produced by seller to 0
+					seller.Kwh = 0
+					amountDebited := float64(partialEnergyConsumed * seller.RatePerKwh)
+					buyer.AccountBalance = buyer.AccountBalance - amountDebited
+					feeAssessed := amountDebited * xchngRate
+					xchngBalance = xchngBalance + feeAssessed
+					amountCredited := amountDebited - feeAssessed
+					// logger.Debugf("Amount debited from buyer %s is %f and amount credited to seller %s is %f", buyer.Id, amountDebited, seller.Id, amountCredited)
+					// logger.Debugf("Fee charged for this transaction: %f", feeAssessed)
+					seller.AccountBalance = seller.AccountBalance + amountCredited
+				}
+			}
+		}
+	}
+	// Now update the table
+	for _, meter := range meters {
 		row, err := t.getRow(stub, meter.Id)
 		if err != nil {
-			// logger.Errorf("Failed retrieving account [%s]: [%s]", meter.id, err)
+			// // logger.Errorf("Failed retrieving account [%s]: [%s]", meter.id, err)
 			return nil, fmt.Errorf("Failed retrieving account [%s]: [%s]", meter.Id, err)
 		}
 
-		newBalance := meter.AccountBalance + amount
-		// logger.Debugf("New balance for account:%s is %f", meter.id, newBalance)
-		newBalanceStr := strconv.FormatFloat(newBalance, 'f', 6, 64)
+		newBalanceStr := strconv.FormatFloat(meter.AccountBalance, 'f', 6, 64)
 		row.Columns[3] = &shim.Column{Value: &shim.Column_String_{String_: newBalanceStr}}
-		row.Columns[2] = &shim.Column{Value: &shim.Column_Int64{Int64: 0}}
+		row.Columns[2] = &shim.Column{Value: &shim.Column_Int64{Int64: meter.Kwh}}
 
 		ok, err := t.updateRow(stub, row)
 		if !ok && err == nil {
@@ -434,6 +500,7 @@ func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []stri
 		Name:           row.Columns[1].GetString_(),
 		Kwh:            row.Columns[2].GetInt64(),
 		AccountBalance: balance,
+		RatePerKwh:     row.Columns[4].GetInt64(),
 	}
 
 	payload, err := json.Marshal(meter)
@@ -472,13 +539,14 @@ func (t *EnergyTradingChainCode) meters(stub *shim.ChaincodeStub, args []string)
 			Name:           row.Columns[1].GetString_(),
 			Kwh:            row.Columns[2].GetInt64(),
 			AccountBalance: balance,
+			RatePerKwh:     row.Columns[4].GetInt64(),
 		}
 		meters = append(meters, meter)
 	}
 
 	payload, err := json.Marshal(meters)
 	if err != nil {
-		// logger.Errorf("Failed retrieving account [%s]: [%s]", accountId, err)
+		// logger.Errorf("Failed marshalling payload")
 		return nil, fmt.Errorf("Failed marshalling payload [%s]", err)
 	}
 

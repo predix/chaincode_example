@@ -9,8 +9,9 @@
     "ctorMsg": {
       "function": "enroll",
       "args": [
-        "2",
-        "Bob"
+        "1",
+        "Alice",
+        "2"
       ]
     }
   },
