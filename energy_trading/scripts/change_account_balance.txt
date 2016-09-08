@@ -4,7 +4,7 @@
   "params": {
     "type": 1,
     "chaincodeID": {
-      "name": "59752a3c1733ff55ac5cd2d03b83ae902c0d6d717b03315ee2d3195228bc6de4066b4d4c4ae193d384e16dfb22d0b100c9da45375429724ea13250e9449f7f98"
+      "name": "b63a5334b59c4ec4a6b645e1ae9f2bf88f17b4e5b5222c711171572d1493aeae35c57a31a6cedaa5b96d979ed8bb5ff311419f116c165281fbe1976949c2fcbc"
     },
     "ctorMsg": {
       "function": "changeAccountBalance",
