@@ -4,13 +4,13 @@
   "params": {
     "type": 1,
     "chaincodeID": {
-      "name": "b63a5334b59c4ec4a6b645e1ae9f2bf88f17b4e5b5222c711171572d1493aeae35c57a31a6cedaa5b96d979ed8bb5ff311419f116c165281fbe1976949c2fcbc"
+      "name": "d6a2925ca38547544822020a69b3dd82511607051b33149d668b80ca4aadb0065a9eee2346d183f61d92c69cc2b362d8556ae28948662db1ef1118ffd6c324fb"
     },
     "ctorMsg": {
       "function": "enroll",
       "args": [
-        "1",
-        "Alice", "2"
+        "4",
+        "Dave", "3"
       ]
     }
   },

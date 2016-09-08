@@ -347,6 +347,9 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 			sellers = append(sellers, meter)
 		}
 	}
+	// Sort the buyers so we can match buyers with lower asking rate with sellers offering
+	// lower rates
+	sort.Sort(ByRate(buyers))
 	// Sort the sellers so buyers can purchase from sellers offering lower rates first
 	sort.Sort(ByRate(sellers))
 
