@@ -1,13 +1,13 @@
 {
   "jsonrpc": "2.0",
-  "method": "query",
+  "method": "invoke",
   "params": {
     "type": 1,
     "chaincodeID": {
       "name": "59752a3c1733ff55ac5cd2d03b83ae902c0d6d717b03315ee2d3195228bc6de4066b4d4c4ae193d384e16dfb22d0b100c9da45375429724ea13250e9449f7f98"
     },
     "ctorMsg": {
-      "function": "reportedKwh",
+      "function": "delete",
       "args": [
         "3"
       ]

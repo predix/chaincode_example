@@ -80,6 +80,7 @@ func (t *EnergyTradingChainCode) Init(stub *shim.ChaincodeStub, function string,
 			&shim.ColumnDefinition{Name: "AccountName", Type: shim.ColumnDefinition_STRING, Key: false},
 			&shim.ColumnDefinition{Name: "ReportedKWH", Type: shim.ColumnDefinition_INT64, Key: false},
 			&shim.ColumnDefinition{Name: "AccountBalance", Type: shim.ColumnDefinition_STRING, Key: false},
+			&shim.ColumnDefinition{Name: "RatePerKWH", Type: shim.ColumnDefinition_INT64, Key: false},
 		})
 		if err != nil {
 			logger.Errorf("Error creating table:%s", err.Error())
@@ -98,6 +99,10 @@ func (t *EnergyTradingChainCode) Invoke(stub *shim.ChaincodeStub, function strin
 
 	if function == "enroll" {
 		return t.enroll(stub, args)
+	}
+
+	if function == "delete" {
+		return t.delete(stub, args)
 	}
 
 	if function == "changeAccountBalance" {
@@ -152,6 +157,31 @@ func (t *EnergyTradingChainCode) enroll(stub *shim.ChaincodeStub, args []string)
 		return nil, errors.New("Error in enrolling a new account")
 	}
 	logger.Infof("Enrolled account %s", accountId)
+
+	return nil, nil
+}
+
+// Deletes an existing meter
+func (t *EnergyTradingChainCode) delete(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	logger.Info("In delete function")
+	if len(args) != 1 {
+		logger.Error("Incorrect number of arguments")
+		return nil, errors.New("Incorrect number of arguments. Specify account number to be deleted")
+	}
+
+	accountId := args[0]
+
+	logger.Infof("Deleting meter with id:%s", accountId)
+
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: accountId}}
+	columns = append(columns, col1)
+	err := stub.DeleteRow(tableName, columns)
+	if err != nil {
+		logger.Errorf("Error in deleting an account:%s", err)
+		return nil, errors.New("Error in deleting an account")
+	}
+	logger.Infof("Deleted account %s", accountId)
 
 	return nil, nil
 }
