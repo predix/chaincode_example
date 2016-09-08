@@ -1,0 +1,200 @@
+
+<script type="text/javascript">
+	var requestCount = 0;
+	var requests = {};
+	var pocBehavior = {
+		properties: {
+			log: {
+				type: Boolean,
+				value: true
+			},
+			config: {
+				type: Object,
+				value: function () {
+					return {
+						endpoint: '/api/v1',
+						secureContext: null,
+						chaincodeID: {
+							report: '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e',
+							settle: '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e'
+						}
+					}
+				}
+			}
+		},
+
+		method1: function () {
+
+		},
+		/**
+		 * A wrapper around `console.log`.
+		 */
+		_log: function () {
+			if (this.log) {
+				console.log.apply(console, arguments);
+			}
+		},
+		/**
+		 * A wrapper around `console.log`.
+		 */
+		_warn: function () {
+			if (this.log) {
+				console.warn.apply(console, arguments);
+			}
+		},
+		/**
+		 * A wrapper around `console.error`.
+		 */
+		_error: function () {
+			if (this.log) {
+				console.error.apply(console, arguments);
+			}
+		},
+		/**
+		 * A wrapper around `console.group`.
+		 */
+		_group: function () {
+			if (this.log) {
+				console.group.apply(console, arguments);
+			}
+		},
+		/**
+		 * A wrapper around `console.groupEnd`.
+		 */
+		_groupEnd: function () {
+			if (this.log) {
+				console.groupEnd.apply(console, arguments);
+			}
+		},
+		//Utility method for sending a request.
+		request: function (url, options, callback) {
+			var self = this, xhr, resp, opts;
+			return new Promise(function (resolve, reject) {
+				opts = _.assignIn({
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					method: 'GET'
+				}, options);
+
+				xhr = new XMLHttpRequest();
+				xhr.open(opts.method, url || '/');
+				opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+				for (var s in opts.headers) {
+					xhr.setRequestHeader(s, opts.headers[s]);
+				}
+				self._group(opts.method, url);
+				console.time(url);
+				self.fire('request', xhr);
+				xhr.send(JSON.stringify(opts.body || opts.data) || null);
+				requests[requestCount] = xhr;
+				xhr.onload = function () {
+					self.fire('last-response', this.response);
+
+					if (this.status >= 200 && this.status < 300) {
+						try {
+							resp = JSON.parse(this.response);
+						} catch (e) {
+							reject(e);
+						}
+
+						self._log(this.status, resp);
+						console.timeEnd(url);
+						self._groupEnd();
+
+						if (callback) {
+							callback(null, resp);
+						} else {
+							resolve(resp);
+						}
+
+					} else {
+						reject(JSON.parse(this.response));
+					}
+				};
+				xhr.onerror = function () {
+					self.fire('uaa-error', this.response);
+					console.log(this.status, this.response);
+					self._groupEnd();
+					reject(this.statusText);
+				};
+			});
+		},
+		/**
+		 * Send a blockchain request
+		 * @param method {String} The name of the method
+		 * @param func {String} The name of the function
+		 * @param args {Array} The arguments
+		 * @returns {Promise}
+		 */
+		blockchainRequest: function (method, func, args) {
+			var self = this;
+			var payload = {
+				jsonrpc: '2.0',
+				params: {
+					type: 1,
+					chaincodeID: {
+						name: this.config.chaincodeID.report
+					},
+					ctorMsg: {
+						'function': func,
+						args: args.map(function (i) {
+							return '' + i;
+						})
+					}
+				},
+				method: method,
+				id: requestCount++
+			};
+			return new Promise(function(resolve, reject){
+				self._group('blockchainRequest', method, func, args.toString());
+				console.time(func);
+				self.debounce('blockchainRequest', function(){
+					self.request(self.config.endpoint + '/chaincode', {
+						method: 'POST',
+						data: payload
+					}).then(function (resp) {
+						console.timeEnd(func);
+						self._groupEnd(resp);
+						resolve(resp);
+					}).catch(reject);
+				});
+			});
+		},
+		settle: function () {
+			return this.blockchainRequest('invoke', 'settle', []);
+		},
+		getBalance: function (id) {
+			return this.blockchainRequest('query', 'balance', [id]);
+		},
+		getMeterInfo: function (id) {
+			return this.blockchainRequest('query', 'meterInfo', [id]);
+		},
+		getMeters: function () {
+			return this.blockchainRequest('query', 'meters', []);
+		},
+		setReportDelta: function (id, delta) {
+			return this.blockchainRequest('invoke', 'reportDelta', [id, delta]);
+		},
+		getReportedKwh: function (id) {
+			return this.blockchainRequest('query', 'reportedKwh', [id]);
+		},
+		setAccountBalance: function (id, amount) {
+			return this.blockchainRequest('invoke', 'changeAccountBalance', [id, amount]);
+		},
+		getAccountBalance: function () {
+			return this.blockchainRequest('query', 'exchangeAccountBalance', []);
+		},
+		getExchangeRate: function () {
+			return this.blockchainRequest('query', 'exchangeRate', []);
+		},
+		enroll: function (id, name, rate) {
+			return this.blockchainRequest('invoke', 'enroll', [id, name, rate]);
+		},
+		unenroll: function (id) {
+			return this.blockchainRequest('invoke', 'delete', [id]);
+		}
+	};
+
+
+</script>

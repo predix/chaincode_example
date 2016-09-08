@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="pxm">
+
+	<head>
+		<meta charset="utf-8">
+		<title>poc-app unit tests</title>
+		<meta charset="UTF-8">
+
+		<script src="../../bower_components/web-component-tester/browser.js"></script>
+		<link rel="import" href="../../bower_components/px-theme/px-theme.html">
+		<link rel="import" href="../../bower_components/px-theme/px-app.html">
+		<link rel="import" href="../../bower_components/test-fixture/test-fixture.html">
+		<link rel="import" href="poc-app.html" />
+	</head>
+
+	<body>
+
+		<test-fixture id="fixtureElement">
+		  <template>
+				<poc-app id="element"></poc-app>
+		  </template>
+		</test-fixture>
+
+
+
+		<script type="text/javascript">
+			// TODO: Specs here
+			describe('<poc-app>', function() {
+				var element, fixtureElement;
+				before(function(){
+					//element = fixture('fixtureElement');
+					fixtureElement = document.getElementById('fixtureElement');
+					element = fixtureElement.create();
+				});
+				it('renders', function() {
+					assert.ok(element);
+				});
+
+				it('1. Report status for consumption and production using:', function(done) {
+					var complete = _.after(element.meters.length, function(){
+						done();
+					});
+
+					flush(function(){
+						var val = 500;
+						_.each(element.meters, function(meter){
+							if(meter.consumer){
+								val = 5;
+							}
+							element.report(meter, val).then(function(resp){
+								expect(resp);
+								complete();
+							});
+						});
+					});
+				});
+
+				it('2. Change current balance for consumers:', function(done) {
+					assert.ok(element);
+					done();
+				});
+				it('3. Change current balance for consumers:', function(done) {
+					assert.ok(element);
+					done();
+				});
+				it('4. Check the status for kWh and account:', function(done) {
+					assert.ok(element);
+					done();
+				});
+			});
+		</script>
+	</body>
+
+</html>

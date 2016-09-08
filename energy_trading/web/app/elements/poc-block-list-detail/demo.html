@@ -1,0 +1,60 @@
+<html>
+
+	<head>
+		<title>poc-block-list-detail demo</title>
+		<script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+		<link rel="import" href="poc-block-list-detail.html">
+		<link rel="import" href="../elements.html">
+		<style media="screen">
+			html,
+			body {
+				background-color: #eee !important;
+			}
+		</style>
+	</head>
+
+	<body unresolved class="viewport u-p">
+
+		<h2>Meter Form</h2>
+		<form>
+			<px-table-view>
+				<px-table-row label2=" " title="Enroll Meter"></px-table-row>
+				<px-table-row label2="Name">
+					<input type="text" class="text-input" placeholder="Name" name="name">
+				</px-table-row>
+				<px-table-row label2="Rate">
+					<input type="number" class="text-input" placeholder="Rate per kwh" name="rate_per_kwh">
+				</px-table-row>
+				<px-table-row label2=" ">
+					<div row-content class="flex">
+						<button type="reset" class="btn">Cancel</button>
+						<button type="button" class="btn btn--primary">Submit</button>
+					</div>
+				</px-table-row>
+			</px-table-view>
+		</form>
+
+		<h2>Account Balance Form</h2>
+		<form >
+			<px-table-view>
+				<px-table-row label2=" " title="Account Balance"></px-table-row>
+				<px-table-row label2="Amount">
+					<input type="number" class="text-input" placeholder="Amount to fund" name="account_balance">
+				</px-table-row>
+				<px-table-row label2=" ">
+					<div row-content class="flex">
+						<button type="reset" class="btn">Cancel</button>
+						<button type="button" class="btn btn--primary">Submit</button>
+					</div>
+				</px-table-row>
+			</px-table-view>
+		</form>
+
+		<h1>poc-block-list-detail</h1>
+		<template is="dom-bind">
+			<app-location id="location" route="{{route}}" use-hash-as-path></app-location>
+			<poc-block-list-detail id="demo" route="{{route}}"></poc-block-list-detail>
+		</template>
+	</body>
+
+</html>
