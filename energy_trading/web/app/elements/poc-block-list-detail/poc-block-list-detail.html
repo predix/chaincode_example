@@ -1,0 +1,96 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/app-route/app-route.html" />
+<link rel="import" href="../../../bower_components/iron-list/iron-list.html" />
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html" />
+<link rel="import" href="../../../bower_components/px-table-view/px-table-view.html" />
+
+<!--
+## Usage
+To use this component:
+```
+<poc-block-list-detail title="Test Element"></poc-block-list-detail>
+```
+@element component.html
+@blurb poc-block-list-detail Element description
+@demo demo.html
+@homepage index.html
+-->
+<dom-module id="poc-block-list-detail">
+	<style>
+		:host {
+			display: block;
+		}
+	</style>
+	<template>
+
+		<iron-ajax id="ajaxBlocks"
+		  auto
+		  url="/api/v1/chain"
+		  handle-as="json"
+		  on-response="handleBlocksResponse"></iron-ajax>
+		<iron-ajax id="ajaxBlock"
+		  auto
+		  url="/api/v1/chain/blocks/{{routeData.id}}"
+		  handle-as="json"
+		  on-response="handleBlockResponse"></iron-ajax>
+		<app-route id="router" route="{{route}}" pattern="/:view/:id" data="{{routeData}}"></app-route>
+
+		<ul>
+			<li>Route: {{route.path}}</li>
+			<li>View: {{routeData.view}}</li>
+			<li>ID: {{routeData.id}}</li>
+		</ul>
+		<iron-pages id="pages" selected="{{routeData.view}}" attr-for-selected="data-view">
+			<div class="page" data-view="list">
+				<h3>Blocks</h3>
+			</div>
+			<div class="page" data-view="detail">
+				<h3>Block Detail</h3>
+
+				<px-table-view>
+					<px-table-row modifier="header" title="Block {{block.id}}"></px-table-row>
+					<px-table-row title="Previous Block Hash" body="{{block.previousBlockHash}}"></px-table-row>
+					<px-table-row title="State Hash" body="{{block.stateHash}}"></px-table-row>
+				</px-table-view>
+			</div>
+		</iron-pages>
+	</template>
+	<script>
+		Polymer({
+			is: 'poc-block-list-detail',
+			properties: {
+				items: {
+					type: Array
+				},
+				selectedItem: {
+					type: Object
+				},
+				block: {
+					type: Object
+				},
+				route: {
+					type: Object,
+					value: function() {
+						return {
+							path: '/'
+						};
+					},
+					notify: true
+				},
+				routeData: {
+					type: Object,
+					notify: true
+				}
+			},
+			handleBlocksResponse: function(e){
+
+			},
+			handleBlockResponse: function(e){
+				console.log('Handle Block Response', e.detail.response);
+				this.set('block', e.detail.response);
+				this.set('block.id', this.routeData.id);
+			}
+		});
+	</script>
+</dom-module>

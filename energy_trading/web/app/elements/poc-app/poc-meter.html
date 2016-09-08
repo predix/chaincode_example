@@ -1,0 +1,230 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/px-table-view/px-table-view.html" />
+<link rel="import" href="../../bower_components/px-card/px-card.html" />
+<link rel="import" href="../../bower_components/px-partials/px-icon/px-icon.html" />
+<link rel="import" href="../../bower_components/px-layout/px-layout-styles.html" />
+
+<link rel="import" href="behavior.html">
+<dom-module id="poc-meter">
+	<style include="px-layout-css">
+		:host {
+			display: block;
+		}
+		:host .remove-btn{
+			opacity: 0;
+			transition: opacity .25s ease-in-out;
+			-moz-transition: opacity .25s ease-in-out;
+			-webkit-transition: opacity .25s ease-in-out;
+		}
+		:host .remove-btn:hover{
+			color: red;
+		}
+		:host:hover .remove-btn{
+			opacity: 1;
+		}
+		:host:hover .actions{
+			opacity: 1;
+		}
+		:host .actions{
+			opacity: 0;
+			transition: opacity .25s ease-in-out;
+			-moz-transition: opacity .25s ease-in-out;
+			-webkit-transition: opacity .25s ease-in-out;
+		}
+		:host {
+			--px-table-row-label--right: {
+				font-size: 1.9rem;
+				font-weight: normal;
+			}
+		}
+
+		:host .smaller {
+			--iron-icon-height: 16px;
+			--iron-icon-width: 16px;
+		}
+	</style>
+	<template strip-whitespace>
+
+		<div class="box u-p-">
+			<div class="flex flex--spaced">
+				<div class="flex__item">
+					<h3 class="u-m- poc-meter-header caps zeta">
+						<!--
+						<px-icon class="smaller" size="16" hidden$="{{!item.connected}}" icon="fa:fa-link"></px-icon>
+						<px-icon class="smaller" size="16" hidden$="{{item.connected}}" icon="fa:fa-chain-broken"></px-icon>
+			-->
+						{{item.name}}
+					</h3>
+				</div>
+				<div class="flex flex--right muted smaller">
+					<px-button modifier="bare icon" icon="fa:fa-trash-o" on-tap="_dispatchRemoveMeter" class="remove-btn"></px-button>
+				</div>
+			</div>
+
+			<px-table-view modifier="tiny" row-modifier="tappable">
+				<px-table-row id="generatingRow" on-tap="_handleGetReport" hidden$="{{item.consumer}}" icon="fa:fa-sun-o" title="Generating" label1$="{{item.kwh}} kWh"></px-table-row>
+				<px-table-row id="consumingRow" on-tap="_handleGetConsumption" hidden$="{{!item.consumer}}" icon="fa:fa-lightbulb-o" title="Burning" label1$="{{item.kwh}} kWh"></px-table-row>
+				<px-table-row id="balanceRow" on-tap="_handleGetBalance" icon="fa:fa-btc" title="Balance" label1="{{item.account_balance}}"></px-table-row>
+				<px-table-row id="kwhRow" icon="fa:fa-money" title="Rate Per kWh"
+				label1="{{item.rate_per_kwh}}"></px-table-row>
+			</px-table-view>
+
+			<paper-tooltip for="generatingRow">The amount of kWh this meter is producing</paper-tooltip>
+			<paper-tooltip for="consumingRow">The amount of kWh this meter is consuming</paper-tooltip>
+			<paper-tooltip for="balanceRow">The account balance of this meter</paper-tooltip>
+
+			<div class="flex flex--spaced u-mt actions">
+				<input is="iron-input" bind-value="{{item.value}}" class="text-input u-mr--" type="number" placeholder="kWh">
+				<button type="button" on-tap="_handleReport" class="btn btn--full btn--tertiary u-mr--">Report</button>
+
+				<input is="iron-input" bind-value="{{item.change}}" class="text-input u-mr--" type="number" placeholder="Balance">
+				<button type="button" on-tap="_handleChange" class="btn btn--full btn--tertiary">Fund</button>
+			</div>
+		</div>
+	</template>
+	<script type="text/javascript">
+		Polymer({
+			is: 'poc-meter',
+			behaviors: [
+				pocBehavior
+			],
+			properties: {
+				title: {
+					type: String
+				},
+				item: {
+					type: Object
+				},
+				auto: {
+					type: Boolean
+				},
+				time: {
+					type: Number,
+					value: 10000
+				}
+			},
+			intervalId: null,
+			listeners: {
+				'poc-refresh': 'refresh'
+			},
+			observers: ['_updateItem(item.*)'],
+			_updateItem: function(item){
+				if(item && item.kwh){
+
+					item.account_balance = Number(item.account_balance).toFixed(2);
+					item.consumer = (item.kwh <= 0);
+					item.connected = (item.consumer && item.balance > 0);
+					item.load = chance.integer({
+						min: 1,
+						max: 5
+					});
+				}
+			},
+			attached: function() {
+				this.async(function(){
+					this.refreshMeter();
+				});
+			},
+			_refresh: function() {
+				this.refreshMeter();
+			},
+			refresh: function() {
+				var self = this;
+				this.async(function() {
+					//this._handleGetReport();
+					//this._handleGetBalance();
+					//this._handleGetConsumption();
+					if (!this.intervalId && this.auto) {
+						this.intervalId = setInterval(function() {
+							self._report().then(function() {});
+						}, this.time);
+					}
+				});
+			},
+			refreshMeter: function(){
+				var self = this;
+				this.getMeterInfo(this.item.id).then(function(resp) {
+					var d = JSON.parse(resp.result.message);
+					self.set('item.kwh', d.kwh);
+					self.set('item.account_balance', Number(d.account_balance).toFixed(2));
+				});
+			},
+			_report: function(e) {
+				var self = this,
+					totalLoad = 0,
+					idleLoad = 0,
+					totalPower = 0;
+				if (this.item.connected && this.item.consumer) {
+					totalLoad += this.item.load;
+				} else if (!this.item.consumer) {
+					idleLoad += this.item.kwh;
+				}
+				totalPower = totalLoad * 1.1;
+				if (!this.item.consumer) {
+					this.item.power = totalPower * (this.item.kwh / 1);
+					//return this.blockchainRequest('invoke', 'report', [this.item.id, this.item.power]);
+				}
+				return this._handleReport();
+			},
+			_handleGetBalance: function(e) {
+				var self = this;
+				this.getBalance(this.item.id).then(function(resp) {
+					console.log(self.item.name, 'balance', parseInt(resp.result.message));
+					self.set('item.account_balance', Number(resp.result.message).toFixed(2));
+				});
+			},
+			_handleGetReport: function(e) {
+				var self = this;
+				this.getReportedKwh(this.item.id).then(function(resp) {
+					console.log(self.item.name, 'reported_kwh', resp.result.message);
+					self.set('item.kwh', parseInt(resp.result.message));
+				});
+			},
+			_handleGetConsumption: function(e) {
+				var self = this;
+				this.getReportedKwh(this.item.id).then(function(resp) {
+					console.log(self.item.name, '_handleGetConsumption', parseInt(resp.result.message));
+					self.set('item.kwh', (resp.result.message));
+				});
+			},
+			_handleChange: function(e) {
+				var self = this;
+				this.blockchainRequest('invoke', 'changeAccountBalance', [this.item.id, this.item.change]).then(function(resp) {
+					self.item.change = null;
+					self.debounce('getBalance', function() {
+						self._handleGetBalance();
+					}, 500);
+				});
+			},
+			_handleReport: function(e) {
+				var self = this;
+				var val = this.item.value;
+				this.setReportDelta(this.item.id, val).then(function(resp) {
+					self.set('item.value', null);
+					self.fire('poc-meter-report', resp);
+				});
+			},
+			randomReport: function() {
+				var self = this;
+				if (this.item.consumer) {
+					this.item.value = (chance.integer({
+						min: 0,
+						max: 15
+					}) * -1);
+				} else {
+					this.item.value = chance.integer({
+						min: 0,
+						max: 50
+					});
+				}
+				self._handleReport();
+			},
+			_dispatchRemoveMeter: function(e){
+				this.fire('poc-meter-remove', this.item);
+			}
+		});
+	</script>
+</dom-module>

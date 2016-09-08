@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>poc-block-list-detail unit tests</title>
+		<meta charset="UTF-8">
+
+		<script src="../../bower_components/web-component-tester/browser.js"></script>
+		<link rel="import" href="../../bower_components/test-fixture/test-fixture.html">
+
+		<!--
+		<link rel="import" href="../../bower_components/px-theme/px-theme.html">
+		<link rel="import" href="../../bower_components/px-theme/px-app.html">
+		-->
+	</head>
+	<body>
+		<test-fixture id="fixtureElement">
+ 		  <template>
+ 				<poc-block-list-detail id="element"></poc-block-list-detail>
+ 		  </template>
+ 		</test-fixture>
+		<script type="text/javascript">
+			describe('<poc-block-list-detail>', function() {
+				var element, fixtureElement;
+				before(function(){
+					fixtureElement = document.getElementById('fixtureElement');
+					element = fixtureElement.create();
+				});
+
+				it('renders', function() {
+					assert.ok(element);
+				});
+			});
+		</script>
+	</body>
+</html>

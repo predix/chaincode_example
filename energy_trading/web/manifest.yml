@@ -1,0 +1,13 @@
+---
+applications:
+  - name: energy-trading
+    buildpack: nodejs_buildpack
+    memory: 128M
+    stack: cflinuxfs2
+    path: .
+    command: npm start
+    services:
+      - my_uaa_instance
+    env:
+      DEBUG: '*'
+      BLOCKCHAIN_ENDPOINT: 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com'

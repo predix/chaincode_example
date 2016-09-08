@@ -1,0 +1,471 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html" />
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html" />
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="../../../bower_components/iron-form/iron-form.html" />
+<link rel="import" href="../../../bower_components/iron-input/iron-input.html" />
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html" />
+<link rel="import" href="../../../bower_components/app-route/app-route.html" />
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html" />
+<link rel="import" href="../../../bower_components/px-table-view/px-table-view.html" />
+<link rel="import" href="../../../bower_components/px-partials/px-partials.html" />
+<link rel="import" href="../../../bower_components/px-card/px-card.html" />
+<link rel="import" href="../../../bower_components/px-layout/px-layout-partials.html" />
+<link rel="import" href="../../../bower_components/px-layout/px-layout.html" />
+
+<script src="../../../bower_components/fetch/fetch.js"></script>
+<script src="../../../bower_components/fastclick/lib/fastclick.js"></script>
+<script src="../../../bower_components/moment/moment.js"></script>
+<script src="../../../bower_components/lodash/lodash.js"></script>
+<script src="../../../bower_components/chance/chance.js"></script>
+
+<link rel="import" href="poc-meter.html">
+<link rel="import" href="behavior.html">
+<link rel="import" href="../poc-block-tree/poc-block-tree.html">
+
+<!--
+## Usage
+To use this component:
+```
+<poc-app title="Test Element"></poc-app>
+```
+@element component.html
+@blurb poc-app Element description
+@demo demo.html
+@homepage index.html
+-->
+
+<dom-module id="poc-app">
+	<style include="px-layout-css">
+		:host {
+			display: block;
+		}
+		:host #meterForm{
+			width: 400px;
+		}
+		:host .box,
+		:host poc-meter {
+			background: #fff;
+			height: 100%;
+			flex: 1 0 250px;
+			border-radius: 6px;
+			box-shadow: 1px 1px 4px rgba(0, 0, 0, .15);
+		}
+		:host poc-meter:hover{
+			box-shadow: 0px 10px 10px rgba(0, 0, 0, .15);
+		}
+		:host .flex__item {
+			flex: 1 0 250px;
+		}
+		:host px-drawer-layout.has-navbar {
+			padding-top: 0 !important;
+		}
+		:host poc-meter {
+			flex: 1 0 300px;
+		}
+		:host {
+			--px-table-row-label--right: {
+				font-size: 1.1rem;
+				font-weight: normal;
+			}
+		}
+		:host .selected {}
+	</style>
+	<template strip-whitespace>
+
+		<app-route id="router" route="{{route}}" pattern="/:view" data="{{routeData}}" tail="{{subroute}}"></app-route>
+
+		<px-drawer-layout id="layout" force-narrow>
+			<px-drawer fixed overlay>
+				<div class="brand-spacer flex flex--center flex--middle u-p-">
+					<px-brand wordmark width="135" height="32"></px-brand>
+				</div>
+				<div class="">
+					<px-table-view attr-for-selected="data-route" selected="{{routeData.view}}">
+						<px-table-row data-route="dashboard" title="Dashboard" modifier="tappable"></px-table-row>
+					</px-table-view>
+				</div>
+			</px-drawer>
+
+			<iron-pages id="main" attr-for-selected="data-route" selected="{{routeData.view}}" fallback-selection="dashboard">
+				<div class="page u-p--" data-route="dashboard">
+					<div class="u-mv">
+						<px-title-bar title="Energy Trading Utility" class="">
+							<px-button id="addMeterBtn" modifier="icon bare large" icon="fa:fa-plus" on-tap="openMeterForm"></px-button>
+							<paper-tooltip for="addMeterBtn">Add new meter</paper-tooltip>
+							<px-button id="refreshBtn" modifier="icon bare large" icon="fa:fa-refresh" on-tap="refresh"></px-button>
+							<paper-tooltip for="refreshBtn">Refresh all meters</paper-tooltip>
+						</px-title-bar>
+						<div class="flex flex--stretch flex--wrap">
+							<div class="flex__item u-m- flex flex--center flex--col">
+								<h3 class="gamma text--center u-mv--" on-tap="tick">{{_formatTime(time)}}</h3>
+								<div class="flex flex--spaced">
+									<button type="button" on-tap="clock" class="btn  btn--full btn--">Start/Stop Clock</button>
+									<button type="button" on-tap="randomReport" class="btn btn--full btn--">Random Report</button>
+									<button type="button" on-tap="settleAll" class="btn btn--primary btn--full btn--">Settle</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="cards">
+						<px-title-bar title="Producers"></px-title-bar>
+						<div class="flex flex--stretch flex--wrap producers">
+							<template is="dom-repeat" items="{{_getProducers(meters)}}">
+								<poc-meter id$="meter-{{item.id}}" item="{{item}}" class="u-m-"></poc-meter>
+							</template>
+						</div>
+						<px-title-bar title="Consumers" class="u-mt"></px-title-bar>
+						<iron-selector selected="{{selectedIndex}}" class="flex flex--stretch flex--wrap consumers" selected-class="selected">
+							<template is="dom-repeat" items="{{_getConsumers(meters)}}">
+								<poc-meter id$="meter-{{item.id}}" item="{{item}}" class="u-m-"></poc-meter>
+							</template>
+						</iron-selector>
+					</div>
+					<paper-toast id="toast" text="This toast auto-closes after 3 seconds"></paper-toast>
+				</div>
+			</iron-pages>
+
+
+
+
+
+			<!-- TODO: Remove Meter Form -->
+			<paper-dialog id="meterDeleteModal" modal>
+			  <h3>Confirm Delete</h3>
+				<form is="iron-form" id="meterDeleteForm">
+					<p>
+						{{msg}}
+					</p>
+					<div row-content class="flex flex--right">
+						<button type="reset" class="btn" dialog-dismiss>No</button>
+						<button type="submit" class="btn btn--primary">Yes</button>
+					</div>
+				</form>
+			</paper-dialog>
+
+			<!-- TODO: New Meter Form -->
+			<paper-dialog id="meterFormModal" modal>
+				<h3>Add Meter</h3>
+				<form is="iron-form" id="meterForm" content-type="application/json">
+					<px-table-view>
+						<px-table-row label2="Name">
+							<input is="iron-input" bind-value="{{meter.name}}" type="text" class="text-input" placeholder="Name" name="name" required autofocus>
+						</px-table-row>
+						<px-table-row label2="Rate">
+							<input is="iron-input" bind-value="{{meter.rate_per_kwh}}" type="number" class="text-input" placeholder="Rate per kwh" name="rate_per_kwh" required>
+						</px-table-row>
+						<px-table-row label2=" ">
+							<div row-content class="flex flex--right">
+								<button type="reset" class="btn">Cancel</button>
+								<button type="submit" class="btn btn--primary">Enroll</button>
+							</div>
+						</px-table-row>
+					</px-table-view>
+				</form>
+			</paper-dialog>
+
+		</px-drawer-layout>
+	</template>
+	<script>
+		Polymer({
+			is: 'poc-app',
+			behaviors: [pocBehavior],
+			properties: {
+				title: {
+					type: String,
+					value: 'Element Title'
+				},
+				time: {
+					notify: true,
+					type: Date,
+					value: function() {
+						return new Date(2016, 5, 1, 12, 0);
+					}
+				},
+				now: {
+					notify: true,
+					type: Date,
+					value: function() {
+						return new Date(2016, 5, 1, 12, 0);
+					}
+				},
+				chain: {
+					type: Object,
+					notify: true
+				},
+				network: {
+					type: Object,
+					notify: true
+				},
+				blocks: {
+					type: Array,
+					notify: true,
+					value: function() {
+						return [];
+					}
+				},
+				meter: {
+					type: Object,
+					notify: true,
+					value: function() {
+						return {};
+					}
+				},
+				residents: {
+					type: Array,
+					notify: true,
+					value: function() {
+						return [{
+							id: 1,
+							name: 'John',
+							balance: 1000,
+							meterIds: [1]
+						}, {
+							id: 2,
+							name: 'Bennie',
+							balance: 2000,
+							meterIds: [2]
+						}, {
+							id: 3,
+							name: 'Carlos',
+							balance: 3000,
+							meterIds: [3, 4]
+						}];
+					}
+				},
+				meters: {
+					type: Array,
+					notify: true,
+					value: function() {
+						return [];
+					}
+				},
+				route: {
+					type: Object,
+					value: function() {
+						return {
+							path: ''
+						};
+					},
+					notify: true
+				},
+				routeData: {
+					type: Object,
+					notify: true
+				},
+				selectedIndex: {
+					type: Number
+				},
+				msg: {
+					type: String
+				},
+				selectedItem: {
+					type: Object,
+					notify: true
+				}
+			},
+			observers: [
+				'_handleSelected(selectedItem)',
+				'_handleMeters(meters)'
+			],
+			count: 0,
+			clockStep: 10,
+			listeners: {
+				'meterDeleteForm.iron-form-submit': '_handleMeterDeleteFormSubmit',
+				'meterDeleteForm.iron-form-reset': '_handleMeterDeleteFormReset',
+				'meterForm.iron-form-submit': '_handleMeterFormSubmit',
+				'meterForm.iron-form-reset': '_handleMeterFormReset',
+				'poc-meter-remove': '_handleMeterRemove',
+				'poc-meter-report': '_handleMeterReport'
+			},
+			_handleMeterReport: function(){
+				this.debounce('refresh', function(){
+					this.refresh();
+				}, 1000);
+			},
+			_formatTime: function(d) {
+				return moment(d).format('LTS');
+			},
+			notify: function(msg){
+				this.$.toast.text = msg;
+				this.$.toast.open();
+			},
+			ready: function() {
+				this.async(function() {
+					if (!this.route.path) {
+						console.log('No route set', 'setting to /');
+						this.set('route.path', '/');
+					}
+				});
+			},
+			attached: function() {
+				this.refresh();
+			},
+
+			clock: function() {
+				var self = this;
+				if (this.stop) {
+					clearInterval(this.stop);
+					this.stop = null;
+				} else {
+					this.stop = setInterval(function() {
+						self.tick();
+					}, 1000);
+				}
+			},
+			addTime: function(t) {
+				var min = this.now.getMinutes() + this.clockStep;
+				var d = this.now;
+				this.time = new Date(this.now.setMinutes(min));
+			},
+			tick: function() {
+				var self = this;
+				var i = 0,
+					minutes = this.now.getMinutes();
+				this.count++;
+				if (minutes === 0) {
+					console.warn('Settle');
+					this.settleAll();
+				} else {
+					self.randomReport();
+					var el = null;
+					for (var i = 0; i < this.meters.length; i++) {
+						if (i + 1 === minutes / this.clockStep) {
+							self.debounce('report', function() {
+
+							}, 500);
+							//el = self.$$('#meter-' + self.meters[i].id);
+						}
+					}
+				}
+				this.addTime(this.now);
+			},
+			refresh: function() {
+				this.notify('Refreshing meters...');
+				var self = this;
+				this.getMeters().then(function(resp) {
+					var meters = JSON.parse(resp.result.message);
+					meters.forEach(function(m) {
+						m.account_balance = Number(m.account_balance).toFixed(2);
+						m.consumer = (m.kwh <= 0);
+					});
+					self.set('meters', meters);
+
+				});
+			},
+			autoRefreshTimer: null,
+			autoRefresh: function() {
+				var self = this;
+				if (!this.autoRefreshTimer) {
+					this.autoRefreshTimer = setInterval(function() {
+						self.refresh();
+					}, 2000);
+				} else {
+					clearInterval(self.autoRefreshTimer)
+				}
+			},
+			randomReport: function() {
+				var self = this;
+				var el = null;
+				var val = null;
+				for (var i = 0; i < this.meters.length; i++) {
+					el = self.$$('#meter-' + self.meters[i].id)
+					if (el.item.consumer) {
+						el.item.value = chance.integer({
+							min: 0,
+							max: 10
+						}) * -1;
+					} else {
+						el.item.value = chance.integer({
+							min: 0,
+							max: 60
+						});
+					}
+					el._report();
+				}
+			},
+			_handleMeters: function(meters) {
+				//console.log('_handleMeters', meters);
+			},
+			settleAll: function(obj) {
+				var self = this;
+				this.notify('Settle...');
+				this.settle().then(function() {
+					setTimeout(function() {
+						self.refresh();
+					}, 2000);
+				});
+			},
+
+			_handleSelected: function(item) {
+				//console.log('_handleSelected', item);
+			},
+			openMeterForm: function(e){
+				this.$.meterFormModal.open();
+			},
+			_handleMeterDeleteFormReset: function(e){
+				this.$.meterDeleteModal.close();
+			},
+			_handleMeterDeleteFormSubmit: function(e){
+				var self = this;
+				this.notify('Removing ' + this.meter.name);
+				this.unenroll(this.meter.id).then(function(){
+					self.$.meterDeleteForm.reset();
+					self.set('meter', {});
+					self.debounce('refresh', function(){
+						self.refresh();
+					}, 1000);
+				});
+			},
+			_handleMeterFormReset: function(e){
+				this.$.meterFormModal.close();
+			},
+			_handleMeterFormSubmit: function(e) {
+				var self = this;
+				this.notify('Enrolling ' + this.meter.name);
+				this.enroll(this.meters.length + 1, this.meter.name, this.meter.rate_per_kwh).then(function(){
+					self.$.meterForm.reset();
+					self.set('meter', {});
+					self.debounce('refresh', function(){
+						self.refresh();
+					}, 1000);
+				});
+			},
+			_getTotalConsumed: function() {
+				var val = 0;
+				this.meters.forEach(function(m) {
+					if (m.consumer) {
+						val += m.kwh;
+					}
+				});
+				return val;
+			},
+			_getTotalProduced: function() {
+				var val = 0;
+				this.meters.forEach(function(m) {
+					if (!m.consumer) {
+						val += m.kwh;
+					}
+				});
+				return val;
+			},
+			_getProducers: function(arr) {
+				return arr.filter(function(i) {
+					return !i.consumer;
+				});
+			},
+			_getConsumers: function(arr) {
+				return arr.filter(function(i) {
+					return i.consumer;
+				});
+			},
+			_handleMeterRemove: function(e){
+				var m = e.detail;
+				this.set('meter', m);
+				this.msg = 'Are you sure you want to remove ' + m.name + '?';
+				this.$.meterDeleteModal.open();
+				console.log('Are you sure you want to remove this meter?', m.name);
+			}
+		});
+	</script>
+</dom-module>
