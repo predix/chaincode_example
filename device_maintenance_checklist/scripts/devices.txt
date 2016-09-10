@@ -1,0 +1,17 @@
+{
+  "jsonrpc": "2.0",
+  "method": "query",
+  "params": {
+    "type": 1,
+    "chaincodeID": {
+      "name": "65520da51781b965be643a2b287d192918e37b81ea86f6c9743c9342a40ca6215ec9408f690e87da83fe24d1f401e7a64f3de7d89f828ee1c5c0aa1604400adc"
+    },
+    "ctorMsg": {
+      "function": "devices",
+      "args": [
+      ]
+    },
+    "secureContext":"alice1"
+  },
+  "id": 0
+}
