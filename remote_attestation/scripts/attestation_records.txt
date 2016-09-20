@@ -4,7 +4,7 @@
   "params": {
     "type": 1,
     "chaincodeID": {
-      "name": "30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e"
+      "name": "dd785baf9f5918fecffb468f11ad9af3dc534810455a81346e9ccb1a24204f483c82e37484cb008243e94e31de7037434db9c29b849354e90a673d40d7ccc3f5"
     },
     "ctorMsg": {
       "function": "attestationRecords",
