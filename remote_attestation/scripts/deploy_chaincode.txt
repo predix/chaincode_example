@@ -1,0 +1,15 @@
+{
+    "jsonrpc": "2.0",
+    "method": "deploy",
+    "params": {
+        "type": 1,
+        "chaincodeID": {
+            "path": "https://github.com/atulkc/chaincode_example/remote_attestation"
+        },
+        "ctorMsg": {
+            "function": "init",
+            "args": []
+        }
+    },
+    "id": 1
+}
