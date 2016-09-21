@@ -40,18 +40,10 @@ $ export PORT=9049;
 $ export BLOCKCHAIN_ENDPOINT=https://endpoint
 ```
 
-2. To change the chaincodeID open the `app/scripts/main.js` file and update the values.
+2. To change the chaincodeID, simply set the following env vars.
 
 ```
-//app/scripts/main.js
-scope.config = {
-	endpoint: '/api/v1',
-	secureContext: null,
-	chaincodeID: {
-		report: '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e',
-		settle: '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e'
-	}
-};
+$ export BLOCKCHAIN_CHAINCODE_ID='someid'
 ```
 
 > Note: The endpoint property is the local express server that proxies requests to `BLOCKCHAIN_ENDPOINT`

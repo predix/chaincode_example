@@ -18,11 +18,16 @@ var http = require('http');
 var https = require('https');
 var privateKey  = fs.readFileSync('sslcerts/key.pem', 'utf8');
 var certificate = fs.readFileSync('sslcerts/cert.pem', 'utf8');
-
+var httpServer, httpsServer;
 var credentials = {key: privateKey, cert: certificate};
 
-//var httpServer = http.createServer(app);
-//var httpsServer = https.createServer(credentials, app);
+if(process.env.NODE_ENV === 'development'){
+	//httpServer = http.createServer(app);
+} else {
+	//httpsServer = https.createServer({}, app);
+}
+
+
 
 
 var log = require('debug')(`${pkg.name}:server`);
@@ -51,6 +56,7 @@ program.config.get('dirs').forEach(function(dir) {
 	app.use(express.static(path.resolve(__dirname, dir), {index: ['index.html']}));
 	//server.watch(path.resolve(__dirname, dir));
 });
+
 
 //Dist dir
 app.use('/bower_components', express.static(path.resolve(__dirname, './bower_components'), {index: ['index.html']}));

@@ -1,10 +1,11 @@
 'use strict';
 const express = require('express');
-const log = require('debug')('poc-blockchain-ui:api');
+const log = require('debug')('chaincode_example:api');
 const request = require('request');
 const bodyParser = require('body-parser');
 
 module.exports = function (program, app) {
+	var chaincodeID = process.env.BLOCKCHAIN_CHAINCODE_ID || '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e';
 	var baseRequest = request.defaults({
 		baseUrl: process.env.BLOCKCHAIN_ENDPOINT || 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com',
 		headers: {
@@ -12,35 +13,9 @@ module.exports = function (program, app) {
 		}
 	});
 
-	function $http(options) {
-		return new Promise(function (resolve, reject) {
-			baseRequest(options, function (err, resp, body) {
-				log('$http', options, resp, body);
-				if (err) {
-					reject(err);
-				}
-				try {
-					resp.data = JSON.parse(resp.body);
-				} catch (e) {
-					console.error('Could not parse json', e);
-				}
-				resolve(resp);
-			});
-		});
-	}
-
-
 	var router = new express.Router();
 	router.use(bodyParser.json());
-	router.use(function (req, res, next) {
-		log(req.method, req.url);
-		next();
-	});
-
-	log('mounted');
-
-
-	router.all('/api/v1/*', function (req, res, next) {
+	router.all('/*', function (req, res, next) {
 		var options = {
 			method: req.method,
 			url: req.url.replace('api/v1/', ''),
@@ -48,21 +23,30 @@ module.exports = function (program, app) {
 			json: req.body || null
 		};
 
+		if (req.method.toLowerCase() === 'post') {
+			req.body.params.chaincodeID.name = chaincodeID;
+			log(req.method, options.url, options.json.method, options.json.params.ctorMsg['function'], options.json.params.ctorMsg.args.toString());
+		}
+
+		options.json = req.body;
+
 		baseRequest(options, function (err, resp, body) {
-			if(!resp){
+			if (!resp) {
 				res.status(400).send({
-					error_message: 'There was a problem.'
+					error: 'There was a problem with the request.',
+					data: options
 				});
 			}
-			log('response', resp.statusCode);
-			if(err){
-				res.status(resp.statusCode).send(body);
+			log(resp.statusCode, options.url);
+			if (resp.body && resp.body.error) {
+				return res.status(400).send(resp.body.error);
 			}
-			res.status(resp.statusCode).send(resp.body);
+			if (err) {
+				return res.status(resp.statusCode).send(resp.body);
+			}
+			return res.status(resp.statusCode).send(resp.body);
 		});
 	});
 
-
-
-	app.use(router);
+	app.use('/api/v1', router);
 };
