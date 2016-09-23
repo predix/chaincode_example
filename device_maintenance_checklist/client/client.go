@@ -58,7 +58,7 @@ type DeviceServiceRecord struct {
 func deploy() (err error) {
 	logger.Debug("Alice is deployer and deploys the chaincode")
 
-	aliceCert, err = alice.GetTCertificateHandlerNext()
+	aliceCert, err = alice.GetEnrollmentCertificateHandler()
 	if err != nil {
 		logger.Errorf("Failed getting Alice TCert [%s]", err)
 		return
@@ -86,24 +86,24 @@ func enroll() (err error) {
 	// 2. Alice enrolls a new device and assigns ownership to Bob.
 	// 3. Alice also assigns ownership of check1, check2 and check3 to
 	//    carol, dave and finn respectively
-	deviceId = "Device4"
+	deviceId = "Device6"
 
-	bobCert, err = bob.GetTCertificateHandlerNext()
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
 		logger.Errorf("Failed getting Bob TCert [%s]", err)
 		return
 	}
-	carolCert, err = carol.GetTCertificateHandlerNext()
+	carolCert, err = carol.GetEnrollmentCertificateHandler()
 	if err != nil {
 		logger.Errorf("Failed getting Carol TCert [%s]", err)
 		return
 	}
-	daveCert, err = dave.GetTCertificateHandlerNext()
+	daveCert, err = dave.GetEnrollmentCertificateHandler()
 	if err != nil {
 		logger.Errorf("Failed getting Dave TCert [%s]", err)
 		return
 	}
-	finnCert, err = finn.GetTCertificateHandlerNext()
+	finnCert, err = finn.GetEnrollmentCertificateHandler()
 	if err != nil {
 		logger.Errorf("Failed getting Finn TCert [%s]", err)
 		return
@@ -116,7 +116,8 @@ func enroll() (err error) {
 	}
 	logger.Debugf("Resp [%s]", resp.String())
 
-	logger.Debug("Wait 10 seconds")
+	logger.Debug("Device enrollment transaction submitted")
+	logger.Debug("Wait 10 seconds...")
 	time.Sleep(10 * time.Second)
 
 	// Now query the device and see if it is enrolled
