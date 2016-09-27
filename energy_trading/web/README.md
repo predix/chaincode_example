@@ -4,6 +4,12 @@ This repository contains an example energy trader application that talks to a bl
 ## Get Started
 First clone this repo and install the dependencies.
 
+
+```
+$ brew install nodejs
+$ npm install -g npm bower
+```
+
 1. Clone the repo and go into web directory
 
 ```
