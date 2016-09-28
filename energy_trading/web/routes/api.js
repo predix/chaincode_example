@@ -5,9 +5,9 @@ const request = require('request');
 const bodyParser = require('body-parser');
 
 module.exports = function (program, app) {
-	var chaincodeID = process.env.BLOCKCHAIN_CHAINCODE_ID || '30268bf2818712b14161bd47db875bd5786b357641c2e09a218ff120dc2b072a15edc2e05a87bf5664debefab25880e91fa10ad0f62dde9ffb9ac47f91c8f73e';
+	var chaincodeID = process.env.BLOCKCHAIN_CHAINCODE_ID || '63d9383dd5b660303df7d1ff024b8b27b740c8608d83794469150892bdbd9b2e719109dab50f7fa13f75d401331cd408d7b02880871966194c1b7fc6072a0b03';
 	var baseRequest = request.defaults({
-		baseUrl: process.env.BLOCKCHAIN_ENDPOINT || 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com',
+		baseUrl: process.env.BLOCKCHAIN_ENDPOINT || 'https://blockchai-blockcha-1g7vft5n33q-1508885349.us-west-2.elb.amazonaws.com/',
 		headers: {
 			'Accept': 'application/json'
 		}
