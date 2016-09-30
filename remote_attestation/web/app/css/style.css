@@ -1,15 +1,3 @@
-[data-status="0"] {
-  border: 2px solid red;
-}
-
-[data-status="1"] {
-  border: 2px solid yellow;
-}
-
-[data-status="2"] {
-  border: 2px solid red;
-}
-
 html, body {
   background: #fefefe;
 }

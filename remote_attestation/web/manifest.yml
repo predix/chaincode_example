@@ -9,6 +9,6 @@ applications:
     services:
       - my_uaa_instance
     env:
-      DEBUG: '*'
+      BLOCKCHAIN_REFRESH_INTERVAL: 5000
       CHAINCODE_ID: '48eedf6c2b7d5e83518795744ca9d6da9ddea3630599fc291974ce16de7309249df0f644469938a4fb747a4de2153d4db9c8878b72fd8f76f077d1e96b6380e3'
-      BLOCKCHAIN_ENDPOINT: 'https://blockchai-blockcha-1J771EXBYDYFJ-224747486.us-west-2.elb.amazonaws.com'
+      BLOCKCHAIN_ENDPOINT: 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com'

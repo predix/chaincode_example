@@ -1,8 +1,0 @@
-{
-    "jsonrpc": "2.0",
-    "result": {
-        "status": "OK",
-        "message": "[{\"device_id\":\"client-1\",\"attestation_serve_id\":\"server-1\",\"status\":2,\"validation_hash\":\"abc13f5ed82b868699041677f80a5e879af2fc78\",\"time\":1475083802894940886},{\"device_id\":\"device1\",\"attestation_serve_id\":\"server1\",\"status\":1,\"validation_hash\":\"0osdfgs9uodmvnp4wcw7\",\"time\":1475012947665151410},{\"device_id\":\"device2\",\"attestation_serve_id\":\"server2\",\"status\":2,\"validation_hash\":\"0osdfgsrtty678mvnp4wcw7\",\"time\":1475084648581502932}]"
-    },
-    "id": 0
-}

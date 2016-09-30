@@ -1,0 +1,92 @@
+<link href="../polymer/polymer.html" rel="import">
+<link href="../px-partials/px-partials.html" rel="import">
+<link href="../px-navbar/px-navbar.html" rel="import">
+<link href="../px-layout/px-drawer-layout/px-drawer-layout.html" rel="import">
+
+<dom-module id="x-app">
+	<template strip-whitespace>
+	<style>
+		:host {
+			display: block;
+		}
+
+		 :host .card {
+			border: 2px solid #333;
+			padding: 1rem;
+			flex: 1 0 200px;
+		}
+
+		 :host [data-status="0"] {
+			border: 2px solid green;
+		}
+
+		:host [data-status="1"] {
+			border: 2px solid orange;
+		}
+
+		 :host [data-status="2"] {
+			border: 2px solid red;
+		}
+	</style>
+	<px-drawer-layout id="layoutx" force-narrow>
+		<px-drawer fixed>
+			<div>My drawer</div>
+		</px-drawer>
+
+		<px-navbar title="Remote Attestation"></px-navbar>
+		<section class="u-p flex flex--wrap">
+
+				<!--div class="tree">
+					<ul>
+						<li><a href="#">Network</a>
+							<ul>
+								<li><a href="">server1</a>
+									<ul>
+										<li><a href="">device1</a></li>
+										<li><a href="">client1</a></li>
+									</ul>
+								</li>
+								<li><a href="">server2</a>
+								<ul>
+										<li><a href="">device2</a></li>
+									</ul>
+								</li>
+
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div-->
+
+				<template is="dom-repeat" items="{{items}}">
+					<div class="u-m card u-p"
+							 data-status$="{{item.status}}"
+							 data-device-id$="{{item.device_id}}"
+							 data-server-id$="{{item.attestation_serve_id}}">
+						<strong>{{item.device_id}}</strong>
+						<small>{{item.datetime}}</small>
+					</div>
+				</template>
+		</section>
+	</px-drawer-layout>
+	</template>
+	<script>
+	Polymer({
+		is: 'x-app',
+		properties: {
+			items: {
+				type: Array
+			}
+		},
+		ready: function() {
+			console.warn(this.tagName, ' created!');
+		},
+		attached: function() {
+			console.warn(this.tagName, ' attached!');
+		},
+		detached: function() {
+			console.warn(this.tagName, ' detached!');
+		}
+	});
+	</script>
+</dom-module>
