@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Remote Attestation App</title>
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
+
+        <link rel="stylesheet" href="css/normalize.css">
+
+        <link rel='stylesheet prefetch' href='https://predixdev.github.io/px-library-design/css/style.css'>
+
+        <link rel="stylesheet" href="css/style.css">
+        <!-- Using Polygit -->
+        <link href="polymer/polymer.html" rel="import">
+        <link href="px-partials/px-partials.html" rel="import">
+        <link href="px-navbar/px-navbar.html" rel="import">
+        <link href="px-layout/px-drawer-layout/px-drawer-layout.html" rel="import">
+
+    </head>
+
+    <body>
+
+
+        <template id="app" is="dom-bind">
+   <x-app id="demo" list-data="{{data}}"></x-app>
+</template>
+
+        <dom-module id="x-app">
+            <style>
+                 :host {
+                    display: block;
+                }
+
+                :host .card {
+                    border: 2px solid #333;
+                    padding: 1rem;
+                    flex: 1 0 200px;
+                }
+
+                :host [data-status="0"] {
+                    border: 2px solid red;
+                }
+
+                :host [data-status="1"] {
+                    border: 2px solid orange;
+                }
+
+                :host [data-status="2"] {
+                    border: 2px solid red;
+                }
+            </style>
+            <template>
+	<px-drawer-layout id="layoutx" force-narrow>
+		<!--px-drawer fixed>
+			<div>My drawer</div>
+		</px-drawer-->
+
+			<px-navbar title="Remote Attestation">
+				<!--div left>
+					<button class="navbar__button" drawer-toggle>
+						<i class="fa fa-lg fa-bars"></i>
+					</button>
+				</div-->
+			</px-navbar>
+			<section class="has-navbar l-full-height">
+				<div class="flex flex--center">
+					<div class="tree">
+					<ul>
+						<li><a href="#">Network</a>
+							<ul>
+								<li><a href="">server1</a>
+									<ul>
+										<li><a href="">device1</a></li>
+										<li><a href="">client1</a></li>
+									</ul>
+								</li>
+								<li><a href="">server2</a>
+								<ul>
+										<li><a href="">device2</a></li>
+									</ul>
+								</li>
+
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+				<div class="u-p flex flex--wrap">
+				<!-- device-->
+				<template is="dom-repeat" items="{{listData}}">
+					<div class="u-m card u-p"
+							 data-status$="{{item.status}}"
+							 data-device-id$="{{item.device_id}}"
+							 data-server-id$="{{item.attestation_serve_id}}">
+						<strong>{{item.device_id}}</strong>
+						<span>{{item.attestation_serve_id}}</span>
+						<small>{{formatDate(item.time)}}</small>
+					</div>
+				</template>
+            </div>
+            </section>
+            </px-drawer-layout>
+            </template>
+        </dom-module>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.22/webcomponents.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.13.1/lodash.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js'></script>
+
+        <script src="js/index.js"></script>
+
+    </body>
+
+</html>
