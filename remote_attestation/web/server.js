@@ -62,7 +62,6 @@ const remoteAttestation = require('./remote-attestation');
 
 const pollDevices = (socket) =>{
 	let refreshDevices = setInterval(() =>{
-		log.info('refreshDevices');
 		remoteAttestation.getDevices().then((resp) =>{
 			socket.emit('devices', resp);
 		});
