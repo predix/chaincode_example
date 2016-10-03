@@ -1,8 +1,9 @@
 <link href="../polymer/polymer.html" rel="import">
+
 <link href="../px-partials/px-partials.html" rel="import">
 <link href="../px-navbar/px-navbar.html" rel="import">
 <link href="../px-layout/px-drawer-layout/px-drawer-layout.html" rel="import">
-
+<link rel="import" href="x-device.html">
 <dom-module id="x-app">
 	<template strip-whitespace>
 	<style>
@@ -10,63 +11,35 @@
 			display: block;
 		}
 
-		 :host .card {
-			border: 2px solid #333;
-			padding: 1rem;
-			flex: 1 0 200px;
+		:host x-device{
+			margin: .5rem;
+      flex: 1 0 200px;
 		}
 
-		 :host [data-status="0"] {
-			border: 2px solid green;
-		}
+	   :host [data-status="0"] {
+	      border: 2px solid green;
+	  }
 
-		:host [data-status="1"] {
-			border: 2px solid orange;
-		}
+	   :host [data-status="1"] {
+	      border: 2px solid orange;
+	  }
 
-		 :host [data-status="2"] {
-			border: 2px solid red;
-		}
+	   :host [data-status="2"] {
+	      border: 2px solid red;
+	  }
 	</style>
 	<px-drawer-layout id="layoutx" force-narrow>
 		<px-drawer fixed>
 			<div>My drawer</div>
 		</px-drawer>
-
 		<px-navbar title="Remote Attestation"></px-navbar>
-		<section class="u-p flex flex--wrap">
-
-				<!--div class="tree">
-					<ul>
-						<li><a href="#">Network</a>
-							<ul>
-								<li><a href="">server1</a>
-									<ul>
-										<li><a href="">device1</a></li>
-										<li><a href="">client1</a></li>
-									</ul>
-								</li>
-								<li><a href="">server2</a>
-								<ul>
-										<li><a href="">device2</a></li>
-									</ul>
-								</li>
-
-							</ul>
-						</li>
-					</ul>
-				</div>
-			</div-->
-
-				<template is="dom-repeat" items="{{items}}">
-					<div class="u-m card u-p"
-							 data-status$="{{item.status}}"
-							 data-device-id$="{{item.device_id}}"
-							 data-server-id$="{{item.attestation_serve_id}}">
-						<strong>{{item.device_id}}</strong>
-						<small>{{item.datetime}}</small>
-					</div>
-				</template>
+		<section class="u-p flex flex--wrap flex--">
+			<template is="dom-repeat" items="{{items}}">
+				<x-device item="{{item}}"
+					data-status$="{{item.status}}"
+		     data-device-id$="{{item.device_id}}"
+		     data-server-id$="{{item.attestation_serve_id}}"></x-device>
+			</template>
 		</section>
 	</px-drawer-layout>
 	</template>
@@ -76,6 +49,12 @@
 		properties: {
 			items: {
 				type: Array
+			},
+			showDetails: {
+				type: Boolean,
+				value: function(){
+					return false;
+				}
 			}
 		},
 		ready: function() {

@@ -57,7 +57,7 @@ function sendBlockchainRequest(){
 function parseDates(resp){
 	if(resp && resp.length){
 		resp.forEach((device) =>{
-			device.datetime = moment(device.time / 100000).format('llll');
+			device.datetime = moment(new Date(device.time / 1000000)).format('llll');
 		});
 	}
 	return resp;

@@ -1,7 +1,7 @@
 ---
 applications:
   - name: remote-attestation
-    buildpack: nodejs_buildpack
+    #buildpack: nodejs_buildpack
     memory: 128M
     stack: cflinuxfs2
     path: .
