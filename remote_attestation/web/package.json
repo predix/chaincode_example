@@ -1,0 +1,71 @@
+{
+  "name": "remote-attestation-app",
+  "version": "0.0.1",
+  "description": "A mininal app for Remote Attestation",
+  "main": "server.js",
+  "author": "Jonnie Spratley",
+  "repository": "",
+  "license": "",
+  "engines": {
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
+  },
+  "config": {
+    "dist": "./dist",
+    "src": "./app",
+    "port": 9002,
+    "livereload": 35729,
+    "dirs": [
+      "./app",
+      "./bower_components"
+    ],
+    "routes": [
+      "routes/api"
+    ]
+  },
+  "files": [
+    "."
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "scripts": {
+    "bower:install": "bower update",
+    "build": "mkdir -p dist && npm run copy:elements && npm run copy:assets && npm run copy:fonts && npm run build:html && npm run vulcanize",
+    "build:html": "usemin $npm_package_config_src/index.html -d $npm_package_config_dist -o $npm_package_config_dist/index.html --htmlmin true --rmlr true",
+    "build:css": "postcss --use autoprefixer app/styles/*.css -d dist/",
+    "vulcanize": "vulcanize --inline-scripts --inline-css $npm_package_config_dist/index.html > $npm_package_config_dist/index.min.html",
+    "copy:elements": "cp -r $npm_package_config_src/elements $npm_package_config_dist/elements",
+    "copy:assets": "cp -r $npm_package_config_src/assets $npm_package_config_dist/assets",
+    "copy:fonts": "mkdir -p $npm_package_config_dist/fonts && cp -r bower_components/px-mobile-ui/fonts $npm_package_config_dist/",
+    "clean": "rimraf $npm_package_config_dist",
+    "open": "open http://localhost:$npm_package_config_port",
+    "start": "node server.js",
+    "poststart": "npm run open",
+    "test": "gulp test:local",
+    "deploy": "cf push"
+  },
+  "keywords": [
+    "predix-mobile"
+  ],
+  "dependencies": {
+    "async": "^2.0.1",
+    "body-parser": "^1.15.2",
+    "debug": "^2.2.0",
+    "express": "^4.13.3",
+    "fs-extra": "^0.23.1",
+    "json-proxy": "^0.9.1",
+    "lodash": "^4.15.0",
+    "moment": "^2.15.1",
+    "morgan": "^1.7.0",
+    "npmlog": "^4.0.0",
+    "request": "^2.74.0",
+    "require-dir": "^0.3.0",
+    "serve-static": "^1.10.0",
+    "socket.io": "^1.4.8"
+  },
+  "devDependencies": {}
+}

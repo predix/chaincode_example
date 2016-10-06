@@ -1,0 +1,82 @@
+<link href="../polymer/polymer.html" rel="import">
+
+<link href="../px-partials/px-partials.html" rel="import">
+<link href="../px-navbar/px-navbar.html" rel="import">
+<link href="../px-layout/px-drawer-layout/px-drawer-layout.html" rel="import">
+<link rel="import" href="x-device.html">
+<dom-module id="x-app">
+	<template strip-whitespace>
+	<style>
+		:host {
+			display: block;
+		}
+
+		:host x-device{
+			margin: .5rem;
+      flex: 1 0 200px;
+      -webkit-flex: 1 0 200px;
+      -moz-flex: 1 0 200px;
+		}
+
+
+		:host {
+			--px-navbar-title:{
+				font-size: 3.5rem;
+			}
+		}
+		:host [data-status="0"] {
+			 border: 2px solid green;
+	 }
+
+		:host [data-status="1"] {
+			 border: 2px solid orange;
+	 }
+
+		:host [data-status="2"] {
+			 border: 2px solid red;
+	 }
+		:host .card{
+			box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.25);
+			background: #fff;
+			border-radius: 10px;
+		}
+	</style>
+	<px-drawer-layout id="layoutx" force-narrow>
+		<px-drawer fixed>
+			<div>My drawer</div>
+		</px-drawer>
+		<px-navbar title="Remote Attestation"></px-navbar>
+		<section class="u-p flex flex--wrap flex--">
+			<template is="dom-repeat" items="{{items}}">
+				<x-device item="{{item}}" class="card"
+					data-status$="{{item.status}}"></x-device>
+			</template>
+		</section>
+	</px-drawer-layout>
+	</template>
+	<script>
+	Polymer({
+		is: 'x-app',
+		properties: {
+			items: {
+				type: Array
+			},
+			showDetails: {
+				type: Boolean,
+				value: function(){
+					return false;
+				}
+			}
+		},
+		ready: function() {
+			console.warn(this.tagName, ' created!');
+		},
+		attached: function() {
+			console.warn(this.tagName, ' attached!');
+		},
+		detached: function() {
+			console.warn(this.tagName, ' detached!');
+		}
+	});
+	</script>
+</dom-module>

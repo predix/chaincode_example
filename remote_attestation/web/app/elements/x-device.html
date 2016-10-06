@@ -1,0 +1,67 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<dom-module id="x-device">
+<style>
+   :host {
+
+      cursor: pointer;
+  }
+
+   :host .w-2 {
+      width: 100px;
+  }
+  :host .u-p{
+    padding: .5rem;
+  }
+
+   :host .w-3 {
+      width: 150px;
+  }
+
+   :host .card {
+      border: 2px solid #333;
+  }
+
+</style>
+<template>
+<div class="u-p" on-tap="toggleDetails">
+  <h3 class="text--center">{{item.device}}</h3>
+  <iron-collapse id="details" opened="{{showDetails}}">
+    <table class="table table--small">
+      <thead>
+        <th class="w-3">Server</th>
+        <th class="w-3">Timestamp</th>
+        <th>Validation Hash</th>
+        <th>Status</th>
+      </thead>
+      <tbody>
+        <template is="dom-repeat" items="[[item.data]]">
+          <tr data-status$="{{item.status}}">
+            <td>{{item.attestation_serve_id}}</td>
+            <td>{{item.datetime}}</td>
+            <td>{{item.validation_hash}}</td>
+            <td class="text--center">{{item.status}}</td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </iron-collapse>
+</div>
+</template>
+<script type="text/javascript">
+    Polymer({
+        is: "x-device",
+        properties: {
+            item: {
+                type: Object
+            },
+            showDetails: {
+                type: Boolean
+            }
+        },
+        toggleDetails: function() {
+            this.showDetails = !this.showDetails;
+        }
+    });
+</script>
+</dom-module>

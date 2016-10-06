@@ -78,10 +78,10 @@
 
 			<div class="flex flex--spaced u-mt actions">
 				<input is="iron-input" bind-value="{{item.value}}" class="text-input u-mr--" type="number" placeholder="kWh">
-				<button type="button" on-tap="_handleReport" class="btn btn--full btn--tertiary u-mr--">Report</button>
+				<button type="button" on-tap="_handleReport" class="btn btn--full btn--tertiary u-mr--" data-on="click" data-event-category="Action" data-event-action="report">Report</button>
 
 				<input is="iron-input" bind-value="{{item.change}}" class="text-input u-mr--" type="number" placeholder="Balance">
-				<button type="button" on-tap="_handleChange" class="btn btn--full btn--tertiary">Fund</button>
+				<button type="button" on-tap="_handleChange" class="btn btn--full btn--tertiary" data-on="click" data-event-category="Action" data-event-action="fund">Fund</button>
 			</div>
 		</div>
 	</template>
