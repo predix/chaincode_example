@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../px-partials/px-icon/px-icon.html">
 <dom-module id="x-device">
 <style>
    :host {
@@ -7,9 +8,10 @@
       cursor: pointer;
   }
 
-   :host .w-2 {
-      width: 100px;
+  :host .w-2 {
+    width: 100px;
   }
+
   :host .u-p{
     padding: .5rem;
   }
@@ -21,6 +23,7 @@
    :host .card {
       border: 2px solid #333;
   }
+
 
 </style>
 <template>
@@ -40,7 +43,9 @@
             <td>{{item.attestation_serve_id}}</td>
             <td>{{item.datetime}}</td>
             <td>{{item.validation_hash}}</td>
-            <td class="text--center">{{item.status}}</td>
+            <td class="text--center">
+              <px-icon icon="fa:fa-square" color="{{_getIconColor(item.status)}}"></px-icon>
+            </td>
           </tr>
         </template>
       </tbody>
@@ -56,11 +61,29 @@
                 type: Object
             },
             showDetails: {
-                type: Boolean
+                type: Boolean,
+                value: function(){
+                  return true;
+                }
             }
         },
         toggleDetails: function() {
             this.showDetails = !this.showDetails;
+        },
+        _getIconColor: function(status){
+          var color = '';
+          switch (status) {
+            case 0:
+            color = 'green';
+              break;
+            case 1:
+              color = 'orange';
+              break;
+            case 2:
+            color = 'red';
+              break;
+          }
+          return color;
         }
     });
 </script>
