@@ -5,8 +5,14 @@ const request = require('request');
 const bodyParser = require('body-parser');
 
 module.exports = function (program, app) {
+
+
+	if(!process.env.BLOCKCHAIN_ENDPOINT){
+		throw new Error('Must provide process.env.BLOCKCHAIN_ENDPOINT');
+	}
+
 	var baseRequest = request.defaults({
-		baseUrl: process.env.BLOCKCHAIN_ENDPOINT || 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com',
+		baseUrl: process.env.BLOCKCHAIN_ENDPOINT,
 		headers: {
 			'Accept': 'application/json'
 		}
@@ -47,6 +53,16 @@ module.exports = function (program, app) {
 			qs: req.query,
 			json: req.body || null
 		};
+
+
+		if(req.body && req.body.params && req.body.params.chaincodeID){
+			if( process.env.CHAINCODE_ID){
+				console.log('Replacing chaincodeID', process.env.CHAINCODE_ID);
+				options.json.params.chaincodeID.name = process.env.CHAINCODE_ID;
+			}
+
+		}
+
 
 		baseRequest(options, function (err, resp, body) {
 			if(!resp){

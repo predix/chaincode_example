@@ -34,6 +34,7 @@
 		<script src="bower_components/fastclick/lib/fastclick.js"></script>
 		<script src="bower_components/moment/moment.js"></script>
 		<script src="bower_components/lodash/lodash.js"></script>
+		<script src="bower_components/autotrack/autotrack.js"></script>
 		<script src="bower_components/chance/chance.js"></script>
 		<!-- endbuild -->
 
@@ -67,7 +68,14 @@
 	  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 	  ga('create', 'UA-83867154-1', 'auto');
-	  ga('send', 'pageview');
+
+		ga('require', 'eventTracker', {
+			attributePrefix: 'data-',
+			events: ['click']
+		});
+		ga('require', 'outboundLinkTracker');
+		ga('require', 'urlChangeTracker');
+		ga('send', 'pageview');
 
 	</script>
 	</body>

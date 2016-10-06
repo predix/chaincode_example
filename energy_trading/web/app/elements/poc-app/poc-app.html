@@ -91,18 +91,20 @@ To use this component:
 				<div class="page u-p--" data-route="dashboard">
 					<div class="u-mv">
 						<px-title-bar title="Energy Trading Utility" class="">
-							<px-button id="addMeterBtn" modifier="icon bare large" icon="fa:fa-plus" on-tap="openMeterForm"></px-button>
+							<px-button id="addMeterBtn" modifier="icon bare large" icon="fa:fa-plus" on-tap="openMeterForm"
+							data-on="click" data-event-category="Report" data-event-action="add"></px-button>
 							<paper-tooltip for="addMeterBtn">Add new meter</paper-tooltip>
-							<px-button id="refreshBtn" modifier="icon bare large" icon="fa:fa-refresh" on-tap="refresh"></px-button>
+							<px-button id="refreshBtn" modifier="icon bare large" icon="fa:fa-refresh" on-tap="refresh"
+							data-on="click" data-event-category="Report" data-event-action="refresh"></px-button>
 							<paper-tooltip for="refreshBtn">Refresh all meters</paper-tooltip>
 						</px-title-bar>
 						<div class="flex flex--stretch flex--wrap">
 							<div class="flex__item u-m- flex flex--center flex--col">
 								<h3 class="gamma text--center u-mv--" on-tap="tick">{{_formatTime(time)}}</h3>
 								<div class="flex flex--spaced">
-									<button type="button" on-tap="clock" class="btn  btn--full btn--">Start/Stop Clock</button>
-									<button type="button" on-tap="randomReport" class="btn btn--full btn--">Random Report</button>
-									<button type="button" on-tap="settleAll" class="btn btn--primary btn--full btn--">Settle</button>
+									<button type="button" on-tap="clock" class="btn  btn--full btn--" data-on="click" data-event-category="Time" data-event-action="start">Start/Stop Clock</button>
+									<button type="button" on-tap="randomReport" class="btn btn--full btn--" data-on="click" data-event-category="Report" data-event-action="random">Random Report</button>
+									<button type="button" on-tap="settleAll" class="btn btn--primary btn--full btn--" data-on="click" data-event-category="Report" data-event-action="settle">Settle</button>
 								</div>
 							</div>
 						</div>
@@ -138,7 +140,7 @@ To use this component:
 					</p>
 					<div row-content class="flex flex--right">
 						<button type="reset" class="btn" dialog-dismiss>No</button>
-						<button type="submit" class="btn btn--primary">Yes</button>
+						<button type="submit" class="btn btn--primary" data-on="click" data-event-category="Action" data-event-action="delete">Yes</button>
 					</div>
 				</form>
 			</paper-dialog>

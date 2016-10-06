@@ -11,3 +11,4 @@ applications:
     env:
       DEBUG: '*'
       BLOCKCHAIN_ENDPOINT: 'https://blockchai-blockcha-sfvkghlrnmp2-1110560954.us-west-2.elb.amazonaws.com'
+      CHAINCODE_ID: '63d9383dd5b660303df7d1ff024b8b27b740c8608d83794469150892bdbd9b2e719109dab50f7fa13f75d401331cd408d7b02880871966194c1b7fc6072a0b03'
