@@ -44,7 +44,7 @@ func (a ByRate) Less(i, j int) bool {
 type EnergyTradingChainCode struct {
 }
 
-func (t *EnergyTradingChainCode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var err error
 	var val float64
 
@@ -95,7 +95,7 @@ func (t *EnergyTradingChainCode) Init(stub *shim.ChaincodeStub, function string,
 	return nil, nil
 }
 
-func (t *EnergyTradingChainCode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "enroll" {
 		return t.enroll(stub, args)
@@ -124,7 +124,7 @@ func (t *EnergyTradingChainCode) Invoke(stub *shim.ChaincodeStub, function strin
 }
 
 // Enrolls a new meter
-func (t *EnergyTradingChainCode) enroll(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) enroll(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In enroll function")
 	if len(args) < 3 {
 		logger.Error("Incorrect number of arguments")
@@ -162,7 +162,7 @@ func (t *EnergyTradingChainCode) enroll(stub *shim.ChaincodeStub, args []string)
 }
 
 // Deletes an existing meter
-func (t *EnergyTradingChainCode) delete(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In delete function")
 	if len(args) != 1 {
 		logger.Error("Incorrect number of arguments")
@@ -186,7 +186,7 @@ func (t *EnergyTradingChainCode) delete(stub *shim.ChaincodeStub, args []string)
 	return nil, nil
 }
 
-func (t *EnergyTradingChainCode) getRow(stub *shim.ChaincodeStub, accountId string) (shim.Row, error) {
+func (t *EnergyTradingChainCode) getRow(stub shim.ChaincodeStubInterface, accountId string) (shim.Row, error) {
 	var columns []shim.Column
 	col1 := shim.Column{Value: &shim.Column_String_{String_: accountId}}
 	columns = append(columns, col1)
@@ -194,12 +194,12 @@ func (t *EnergyTradingChainCode) getRow(stub *shim.ChaincodeStub, accountId stri
 	return stub.GetRow(tableName, columns)
 }
 
-func (t *EnergyTradingChainCode) updateRow(stub *shim.ChaincodeStub, row shim.Row) (bool, error) {
+func (t *EnergyTradingChainCode) updateRow(stub shim.ChaincodeStubInterface, row shim.Row) (bool, error) {
 	return stub.ReplaceRow(tableName, row)
 }
 
 // Change account balance. +ve value means deposit and -ve value means withdrawal
-func (t *EnergyTradingChainCode) changeAccountBalance(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) changeAccountBalance(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In changeAccountBalance function")
 	if len(args) < 2 {
 		logger.Error("Incorrect number of arguments")
@@ -244,7 +244,7 @@ func (t *EnergyTradingChainCode) changeAccountBalance(stub *shim.ChaincodeStub, 
 }
 
 // Report energy produced or consumed. +ve value means produced and -ve value means consumed
-func (t *EnergyTradingChainCode) reportDelta(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) reportDelta(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In reportDelta function")
 	if len(args) < 2 {
 		logger.Error("Incorrect number of arguments")
@@ -283,7 +283,7 @@ func (t *EnergyTradingChainCode) reportDelta(stub *shim.ChaincodeStub, args []st
 }
 
 // Settles the accounts and resets the reported kwh back to 0 for all meters
-func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) settle(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In settle function")
 	var columns []shim.Column
 
@@ -429,7 +429,7 @@ func (t *EnergyTradingChainCode) settle(stub *shim.ChaincodeStub, args []string)
 }
 
 // Query callback representing the query of a chaincode
-func (t *EnergyTradingChainCode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "balance" {
 		return t.balance(stub, args)
@@ -459,7 +459,7 @@ func (t *EnergyTradingChainCode) Query(stub *shim.ChaincodeStub, function string
 }
 
 // Return reported kwh
-func (t *EnergyTradingChainCode) reportedKwh(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) reportedKwh(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In reportedKwh function")
 	if len(args) == 0 {
 		logger.Error("Incorrect number of arguments")
@@ -482,7 +482,7 @@ func (t *EnergyTradingChainCode) reportedKwh(stub *shim.ChaincodeStub, args []st
 	return []byte(reportedKwhStr), nil
 }
 
-func (t *EnergyTradingChainCode) balance(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) balance(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In balance function")
 	if len(args) == 0 {
 		logger.Error("Incorrect number of arguments")
@@ -505,7 +505,7 @@ func (t *EnergyTradingChainCode) balance(stub *shim.ChaincodeStub, args []string
 }
 
 // Return meter information
-func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) meterInfo(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In reportedKwh function")
 	if len(args) == 0 {
 		logger.Error("Incorrect number of arguments")
@@ -546,7 +546,7 @@ func (t *EnergyTradingChainCode) meterInfo(stub *shim.ChaincodeStub, args []stri
 }
 
 // Return all meters
-func (t *EnergyTradingChainCode) meters(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) meters(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In reportedKwh function")
 	if len(args) > 0 {
 		logger.Error("Incorrect number of arguments")
@@ -586,7 +586,7 @@ func (t *EnergyTradingChainCode) meters(stub *shim.ChaincodeStub, args []string)
 	return payload, nil
 }
 
-func (t *EnergyTradingChainCode) exchangeRate(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) exchangeRate(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In exchangeRate function")
 	if len(args) > 0 {
 		logger.Error("Incorrect number of arguments")
@@ -602,7 +602,7 @@ func (t *EnergyTradingChainCode) exchangeRate(stub *shim.ChaincodeStub, args []s
 	return xchngRate, nil
 }
 
-func (t *EnergyTradingChainCode) exchangeAccountBalance(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *EnergyTradingChainCode) exchangeAccountBalance(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In exchangeAccountBalance function")
 	if len(args) > 0 {
 		logger.Error("Incorrect number of arguments")

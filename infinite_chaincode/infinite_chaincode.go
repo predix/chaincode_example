@@ -13,7 +13,7 @@ import (
 type InfiniteChaincode struct {
 }
 
-func (t *InfiniteChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *InfiniteChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var A string // Entities
 	var Aval int // Asset holdings
 	var err error
@@ -40,7 +40,7 @@ func (t *InfiniteChaincode) Init(stub *shim.ChaincodeStub, function string, args
 }
 
 // Transaction makes payment of X units from A to B
-func (t *InfiniteChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *InfiniteChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	var X int // Transaction value
 	var err error
@@ -81,7 +81,7 @@ func (t *InfiniteChaincode) Invoke(stub *shim.ChaincodeStub, function string, ar
 }
 
 // Query callback representing the query of a chaincode
-func (t *InfiniteChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *InfiniteChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	if function != "query" {
 		return nil, errors.New("Invalid query function name. Expecting \"query\"")
 	}

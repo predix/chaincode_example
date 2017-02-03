@@ -44,7 +44,7 @@ type DeviceServiceRecord struct {
 type DeviceMaintenanceChaincode struct {
 }
 
-func (t *DeviceMaintenanceChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var err error
 
 	if len(args) > 0 {
@@ -109,7 +109,7 @@ func (t *DeviceMaintenanceChaincode) Init(stub *shim.ChaincodeStub, function str
 	return adminCert, nil
 }
 
-func (t *DeviceMaintenanceChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "enroll" {
 		return t.enroll(stub, args)
@@ -138,7 +138,7 @@ func (t *DeviceMaintenanceChaincode) Invoke(stub *shim.ChaincodeStub, function s
 }
 
 // Enrolls a new device
-func (t *DeviceMaintenanceChaincode) enroll(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) enroll(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In enroll function")
 	if len(args) < 6 {
 		logger.Error("Incorrect number of arguments")
@@ -210,7 +210,7 @@ func (t *DeviceMaintenanceChaincode) enroll(stub *shim.ChaincodeStub, args []str
 }
 
 // Starts a new service cycle. Allowed only if called by the owner of the device
-func (t *DeviceMaintenanceChaincode) startServiceCycle(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) startServiceCycle(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In startServiceCycle function")
 	if len(args) != 2 {
 		logger.Error("Incorrect number of arguments")
@@ -262,7 +262,7 @@ func (t *DeviceMaintenanceChaincode) startServiceCycle(stub *shim.ChaincodeStub,
 }
 
 // Marks a check complete. Allowed only if the caller is owner of that check
-func (t *DeviceMaintenanceChaincode) markCheckComplete(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) markCheckComplete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In markCheckComplete function")
 	if len(args) != 3 {
 		logger.Error("Incorrect number of arguments")
@@ -341,7 +341,7 @@ func (t *DeviceMaintenanceChaincode) markCheckComplete(stub *shim.ChaincodeStub,
 }
 
 // Sign off the service. Only owner can do it.
-func (t *DeviceMaintenanceChaincode) signoff(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) signoff(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In signoff function")
 	if len(args) != 2 {
 		logger.Error("Incorrect number of arguments")
@@ -415,7 +415,7 @@ func (t *DeviceMaintenanceChaincode) extractDevice(row shim.Row) Device {
 	}
 }
 
-func (t *DeviceMaintenanceChaincode) getDevice(stub *shim.ChaincodeStub, deviceId string) (Device, error) {
+func (t *DeviceMaintenanceChaincode) getDevice(stub shim.ChaincodeStubInterface, deviceId string) (Device, error) {
 	var columns []shim.Column
 	col := shim.Column{Value: &shim.Column_String_{String_: deviceId}}
 	columns = append(columns, col)
@@ -429,7 +429,7 @@ func (t *DeviceMaintenanceChaincode) getDevice(stub *shim.ChaincodeStub, deviceI
 	return device, nil
 }
 
-func (t *DeviceMaintenanceChaincode) getDevices(stub *shim.ChaincodeStub) (Devices, error) {
+func (t *DeviceMaintenanceChaincode) getDevices(stub shim.ChaincodeStubInterface) (Devices, error) {
 	var columns []shim.Column
 
 	rowChannel, err := stub.GetRows(deviceServiceTable, columns)
@@ -456,7 +456,7 @@ func (t *DeviceMaintenanceChaincode) extractServiceRecord(row shim.Row) DeviceSe
 	}
 }
 
-func (t *DeviceMaintenanceChaincode) getDeviceServiceRecord(stub *shim.ChaincodeStub, deviceId, serviceId string) (DeviceServiceRecord, error) {
+func (t *DeviceMaintenanceChaincode) getDeviceServiceRecord(stub shim.ChaincodeStubInterface, deviceId, serviceId string) (DeviceServiceRecord, error) {
 	var columns []shim.Column
 	col1 := shim.Column{Value: &shim.Column_String_{String_: deviceId}}
 	col2 := shim.Column{Value: &shim.Column_String_{String_: serviceId}}
@@ -471,7 +471,7 @@ func (t *DeviceMaintenanceChaincode) getDeviceServiceRecord(stub *shim.Chaincode
 	return deviceServiceRecord, nil
 }
 
-func (t *DeviceMaintenanceChaincode) getDeviceServiceRecords(stub *shim.ChaincodeStub, deviceId string) (DeviceServiceRecords, error) {
+func (t *DeviceMaintenanceChaincode) getDeviceServiceRecords(stub shim.ChaincodeStubInterface, deviceId string) (DeviceServiceRecords, error) {
 	var columns []shim.Column
 	if deviceId != "" {
 		col := shim.Column{Value: &shim.Column_String_{String_: deviceId}}
@@ -491,7 +491,7 @@ func (t *DeviceMaintenanceChaincode) getDeviceServiceRecords(stub *shim.Chaincod
 	return deviceServiceRecords, nil
 }
 
-func (t *DeviceMaintenanceChaincode) isCaller(stub *shim.ChaincodeStub, certificate []byte) (bool, error) {
+func (t *DeviceMaintenanceChaincode) isCaller(stub shim.ChaincodeStubInterface, certificate []byte) (bool, error) {
 	logger.Debug("Checking caller...")
 
 	// In order to enforce access control, we require that the
@@ -540,7 +540,7 @@ func (t *DeviceMaintenanceChaincode) isCaller(stub *shim.ChaincodeStub, certific
 }
 
 // Deletes an existing device and its entry
-func (t *DeviceMaintenanceChaincode) delete(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In delete function")
 	if len(args) != 1 {
 		logger.Error("Incorrect number of arguments")
@@ -570,7 +570,7 @@ func (t *DeviceMaintenanceChaincode) delete(stub *shim.ChaincodeStub, args []str
 }
 
 // Query callback representing the query of a chaincode
-func (t *DeviceMaintenanceChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	if function == "devices" {
 		return t.devices(stub, args)
 	}
@@ -591,7 +591,7 @@ func (t *DeviceMaintenanceChaincode) Query(stub *shim.ChaincodeStub, function st
 }
 
 // Return a device
-func (t *DeviceMaintenanceChaincode) device(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) device(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In device function")
 	if len(args) != 1 {
 		logger.Error("Incorrect number of arguments")
@@ -614,7 +614,7 @@ func (t *DeviceMaintenanceChaincode) device(stub *shim.ChaincodeStub, args []str
 }
 
 // Return all devices
-func (t *DeviceMaintenanceChaincode) devices(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) devices(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In devices function")
 	if len(args) > 0 {
 		logger.Error("Incorrect number of arguments")
@@ -636,7 +636,7 @@ func (t *DeviceMaintenanceChaincode) devices(stub *shim.ChaincodeStub, args []st
 }
 
 // Return a device service record
-func (t *DeviceMaintenanceChaincode) deviceServiceRecord(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) deviceServiceRecord(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In deviceServiceRecord function")
 	if len(args) != 2 {
 		logger.Error("Incorrect number of arguments")
@@ -660,7 +660,7 @@ func (t *DeviceMaintenanceChaincode) deviceServiceRecord(stub *shim.ChaincodeStu
 }
 
 // Return service records for a device
-func (t *DeviceMaintenanceChaincode) deviceServiceRecords(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) deviceServiceRecords(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In deviceServiceRecord function")
 	if len(args) != 1 {
 		logger.Error("Incorrect number of arguments")
@@ -683,7 +683,7 @@ func (t *DeviceMaintenanceChaincode) deviceServiceRecords(stub *shim.ChaincodeSt
 }
 
 // Return service records for a device
-func (t *DeviceMaintenanceChaincode) allServiceRecords(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *DeviceMaintenanceChaincode) allServiceRecords(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In deviceServiceRecord function")
 	if len(args) != 0 {
 		logger.Error("Incorrect number of arguments")
