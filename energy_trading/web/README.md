@@ -7,7 +7,7 @@ First clone this repo and install the dependencies.
 1. Clone the repo and go into web directory
 
 ```
-$ git clone https://github.com/atulkc/chaincode_example.git && cd energy_trading/web
+$ git clone https://github.com/predix/chaincode_example.git && cd energy_trading/web
 ```
 
 2. Install dependencies (npm and bower)

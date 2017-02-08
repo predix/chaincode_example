@@ -4,7 +4,7 @@
     "params": {
         "type": 1,
         "chaincodeID": {
-            "path": "https://github.com/atulkc/chaincode_example/energy_trading"
+            "path": "https://github.com/predix/chaincode_example/energy_trading"
         },
         "ctorMsg": {
             "function": "init",

@@ -4,7 +4,7 @@
     "params": {
         "type": 1,
         "chaincodeID": {
-            "path": "https://github.com/atulkc/chaincode_example/remote_attestation"
+            "path": "https://github.com/predix/chaincode_example/remote_attestation"
         },
         "ctorMsg": {
             "function": "init",
