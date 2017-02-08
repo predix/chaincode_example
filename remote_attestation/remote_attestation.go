@@ -30,7 +30,7 @@ type DeviceAttestationInfo struct {
 type RemoteDeviceAttestation struct {
 }
 
-func (t *RemoteDeviceAttestation) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *RemoteDeviceAttestation) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var err error
 
 	if len(args) != 0 {
@@ -60,7 +60,7 @@ func (t *RemoteDeviceAttestation) Init(stub *shim.ChaincodeStub, function string
 	return nil, nil
 }
 
-func (t *RemoteDeviceAttestation) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *RemoteDeviceAttestation) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "deviceAttestationStatus" {
 		return t.deviceAttestationStatus(stub, args)
@@ -72,7 +72,7 @@ func (t *RemoteDeviceAttestation) Invoke(stub *shim.ChaincodeStub, function stri
 }
 
 // Enrolls a new meter
-func (t *RemoteDeviceAttestation) deviceAttestationStatus(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *RemoteDeviceAttestation) deviceAttestationStatus(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In deviceAttestationStatus function")
 	if len(args) < 4 {
 		logger.Error("Incorrect number of arguments")
@@ -127,7 +127,7 @@ func (t *RemoteDeviceAttestation) deviceAttestationStatus(stub *shim.ChaincodeSt
 	return nil, nil
 }
 
-func (t *RemoteDeviceAttestation) getRow(stub *shim.ChaincodeStub, deviceId, serverId string) (shim.Row, error) {
+func (t *RemoteDeviceAttestation) getRow(stub shim.ChaincodeStubInterface, deviceId, serverId string) (shim.Row, error) {
 	var columns []shim.Column
 	col1 := shim.Column{Value: &shim.Column_String_{String_: deviceId}}
 	col2 := shim.Column{Value: &shim.Column_String_{String_: serverId}}
@@ -137,12 +137,12 @@ func (t *RemoteDeviceAttestation) getRow(stub *shim.ChaincodeStub, deviceId, ser
 	return stub.GetRow(tableName, columns)
 }
 
-func (t *RemoteDeviceAttestation) updateRow(stub *shim.ChaincodeStub, row shim.Row) (bool, error) {
+func (t *RemoteDeviceAttestation) updateRow(stub shim.ChaincodeStubInterface, row shim.Row) (bool, error) {
 	return stub.ReplaceRow(tableName, row)
 }
 
 // Query callback representing the query of a chaincode
-func (t *RemoteDeviceAttestation) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+func (t *RemoteDeviceAttestation) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "attestationRecords" {
 		return t.attestationRecords(stub, args)
@@ -152,7 +152,7 @@ func (t *RemoteDeviceAttestation) Query(stub *shim.ChaincodeStub, function strin
 }
 
 // Return all attestation records
-func (t *RemoteDeviceAttestation) attestationRecords(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *RemoteDeviceAttestation) attestationRecords(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Info("In attestationRecords function")
 	if len(args) > 0 {
 		logger.Error("Incorrect number of arguments")
