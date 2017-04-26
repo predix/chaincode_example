@@ -13,39 +13,7 @@ type SimpleChaincode struct {
 }
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var err error
-
-	if len(args) != 4 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 4")
-	}
-
-	// Initialize the chaincode
-	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+	return t.set(stub, args)
 }
 
 // Transaction makes payment of X units from A to B
@@ -53,6 +21,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	if function == "delete" {
 		// Deletes an entity from its state
 		return t.delete(stub, args)
+	}
+
+	if function == "set" {
+		// Sets the value of balances to some specified value
+		return t.set(stub, args)
 	}
 
 	var A, B string    // Entities
@@ -68,7 +41,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	B = args[1]
 
 	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
 	Avalbytes, err := stub.GetState(A)
 	if err != nil {
 		return nil, errors.New("Failed to get state")
@@ -95,6 +67,43 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
 
 	// Write the state back to the ledger
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	if err != nil {
+		return nil, err
+	}
+
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// Sets the state back to some specified value
+func (t *SimpleChaincode) set(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var A, B string    // Entities
+	var Aval, Bval int // Asset holdings
+	var err error
+
+	if len(args) != 4 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+	}
+
+	// Initialize the chaincode
+	A = args[0]
+	Aval, err = strconv.Atoi(args[1])
+	if err != nil {
+		return nil, errors.New("Expecting integer value for asset holding")
+	}
+	B = args[2]
+	Bval, err = strconv.Atoi(args[3])
+	if err != nil {
+		return nil, errors.New("Expecting integer value for asset holding")
+	}
+	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+
+	// Write the state to the ledger
 	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
 	if err != nil {
 		return nil, err
