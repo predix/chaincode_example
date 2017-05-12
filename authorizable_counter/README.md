@@ -1,0 +1,2 @@
+# Authorizable counter
+This chaincode is similar to [this](https://github.com/hyperledger/fabric/blob/v0.6.1-preview/examples/chaincode/go/authorizable_counter) with only one change. It lets deployer of chaincode specify the attribute value to be used in invoke operation. This is to test the dynamic attributes support in membership service.
