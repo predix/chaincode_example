@@ -10,12 +10,12 @@ Use this chaincode as a reference for enforcing zone based access control as wel
 1. Go get this repo
 
 	```
-	go get github.devtools.predix.io/predix-security/sample-hyperledger-chaincode
+	go get github.com/predix/chaincode_example
 	```
 1. Make sure it compiles
 
 	```
-	cd $GOPATH/src/github.devtools.predix.io/predix-security/sample-hyperledger-chaincode
+	cd $GOPATH/src/github.com/predix/chaincode_example/predix-sample-chaincode
 	go build example.go
 	```
 1. Make required changes to `example.go` as per requirement for your smart contract.
